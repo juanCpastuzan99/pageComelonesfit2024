@@ -1,25 +1,37 @@
-// firebaseConfig.js
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics"; // Opcional: solo si usas Analytics
+// next.config.mjs
+const nextConfig = {
+  // Activa el modo estricto en React
+  reactStrictMode: true,
+  
+  // Habilita el soporte para imágenes optimizadas en Next.js
+  images: {
+    domains: ['example.com'], // Aquí puedes añadir los dominios de los que se permiten cargar imágenes
+  },
 
-// Configuración de Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCQfpJ56nzb2PoYz3rRWoVHeH713Adc6gA",
-  authDomain: "comelonesfit-3f45a.firebaseapp.com",
-  projectId: "comelonesfit-3f45a",
-  storageBucket: "comelonesfit-3f45a.appspot.com",
-  messagingSenderId: "247007592056",
-  appId: "1:247007592056:web:410c62619df8cd5e1bb78d",
-  measurementId: "G-P0742TDT6Z", // Solo si usas Analytics
+  // Configuración para el manejo de i18n (internacionalización)
+  i18n: {
+    locales: ['en', 'es'], // Idiomas soportados
+    defaultLocale: 'en', // Idioma por defecto
+  },
+
+  // Evita la recopilación de datos anónimos en Next.js
+  telemetry: false,
+
+  // Activa la minificación de archivos JavaScript con SWC
+  swcMinify: true,
+
+  // Configuración para webpack
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        fs: false, // Evita errores de "fs" en el lado del cliente
+      };
+    }
+    return config;
+  },
+
+  // Otros ajustes adicionales
+  output: 'standalone', // Permite ejecutar el proyecto de forma independiente (opcional)
 };
 
-// Inicializa Firebase
-const app = initializeApp(firebaseConfig);
-let analytics;
-
-// Verifica si estás en el navegador
-if (typeof window !== "undefined") {
-  analytics = getAnalytics(app);
-}
-
-export { app, analytics };
+export default nextConfig;
