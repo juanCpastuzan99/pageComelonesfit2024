@@ -18,6 +18,7 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log("Usuario autenticado:", user);
+
     } catch (err) {
       setError(err.message);
       console.error("Error de autenticación:", err);
@@ -30,7 +31,7 @@ const Login = () => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       console.log("Usuario autenticado con Google:", user);
-      window.alert("Bienvidos")
+      window.alert("Bienvenidos")
       
       
 

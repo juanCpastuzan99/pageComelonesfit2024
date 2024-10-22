@@ -1,5 +1,6 @@
 
 "user client"
+
 async function getUser(id){
     
    const res = await fetch(`https://reqres.in/api/users/${id}`)
@@ -21,7 +22,7 @@ return (
                 <img src={user.avatar} alt="" />
             </div>
     
-        <div className="card-body">        
+        <div className='card-body'>        
     
         <h3> 
             {user.id} {user.last_name} {user.fist_name} 
