@@ -3,11 +3,12 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useState } from "react";
 import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { app } from "../firebase/firebaseConfig"; 
-import Home from '../../components/Users'
+import { useRouter } from "next/navigation"; 
 
 const auth = getAuth(app);
 
 const Login = () => {
+  const router=useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -17,7 +18,7 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log("Usuario autenticado:", user);
-      <Home/>
+      router.push('/')
       
     } catch (err) {
       setError(err.message);
