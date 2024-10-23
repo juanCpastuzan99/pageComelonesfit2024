@@ -15,7 +15,7 @@ async function UsersPage ({params}){
  const user = await getUser(params.id)
  
 return ( 
-<div cassName="row">
+<div className="row">
      <div className="col-md-6-offset md-3">
         <div className="card">
              <div className="card-header text-center">
