@@ -1,9 +1,10 @@
 /// firebaseConfig.js
+
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyCQfpJ56nzb2PoYz3rRWoVHeH713Adc6gA",
   authDomain: "comelonesfit-3f45a.firebaseapp.com",
   projectId: "comelonesfit-3f45a",
@@ -21,7 +22,7 @@ let auth;
 if (typeof window !== "undefined") {
   app = initializeApp(firebaseConfig);
   analytics = getAnalytics(app);
-  auth=getAuth(app);
+  auth = getAuth(app);
 }
 
-export{ auth, app, analytics };
+export { auth, app, analytics };

@@ -1,107 +1,327 @@
-const PageServices=()=>{
-return (  <div>
-    <h1>Services</h1>
-    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Excepturi, odit! Quidem voluptate fuga quia eos blanditiis expedita numquam eius commodi aspernatur maiores suscipit quod, provident repellat tenetur esse repellendus corrupti.
-    Quibusdam distinctio consequatur ipsa numquam commodi necessitatibus, totam recusandae, eos maxime laborum asperiores? Vitae facilis qui nihil blanditiis adipisci sunt odit atque, corrupti velit ipsa voluptatem dolor reiciendis cum maiores!
-    Libero maiores itaque placeat quos iusto quam unde laborum recusandae corporis cumque odit rem quis natus voluptate, fugit sequi necessitatibus blanditiis reprehenderit, quas voluptas et expedita harum quaerat! Exercitationem, ea!
-    Ut autem, incidunt molestias, nemo velit, necessitatibus laudantium delectus qui distinctio blanditiis illo eligendi odit perferendis magni hic quos dolore cum obcaecati voluptatibus a praesentium illum excepturi quod? Quis, consequuntur!
-    Sed sunt non vero velit magni fugit aut voluptatum at, neque vitae praesentium, alias eveniet repudiandae accusantium officiis, vel cupiditate sint. Harum repellat, vel laborum tenetur atque blanditiis voluptatibus reprehenderit!
-    Enim incidunt fugiat quod blanditiis nulla tenetur, magni accusamus, ipsa ratione exercitationem illo nesciunt, hic quia maiores perspiciatis sequi velit quis adipisci minima officia assumenda. Voluptatibus soluta est aspernatur neque!
-    Recusandae a delectus blanditiis fugit facilis dolorem laborum assumenda minus libero in dolor porro iure quod id harum eligendi totam ducimus at quidem, laudantium quibusdam expedita accusamus similique esse. Molestias.
-    Nostrum a iste, minima eaque sunt eum dolorem minus, rem, deleniti voluptas mollitia praesentium ducimus dolor cupiditate qui asperiores nemo. Suscipit commodi quos cum dolores debitis eligendi aspernatur animi aliquid?
-    Cum optio, cupiditate minima ea hic molestias quod. Accusantium ab similique nam incidunt maiores reiciendis, ipsum, minima animi nemo tenetur voluptas placeat in harum consectetur officiis eveniet natus laboriosam facilis!
-    Perferendis a similique odit quidem consequatur. Hic doloremque cum minima vero velit corrupti blanditiis fugit laboriosam iste ducimus, molestiae porro et eveniet atque perspiciatis possimus eligendi aliquid, iure praesentium sapiente?
-    Veniam sed dicta voluptatibus, esse delectus iste. Quae voluptate tempora distinctio nobis quaerat atque autem quia debitis totam esse error, voluptatem nostrum, ea quo corrupti nulla consectetur mollitia libero ipsa!
-    Corrupti, tenetur atque. Beatae distinctio sequi tempore suscipit quasi ratione nesciunt non placeat ducimus quia possimus labore atque, architecto dolore exercitationem sint ipsa laborum quaerat nisi, et totam corporis quod.
-    A culpa dignissimos ullam hic eveniet est, ab voluptates minima at nulla veritatis expedita quia, aut iste quam dolorem modi nostrum! Dolores tempore nostrum sed ex aliquam laboriosam quae est.
-    Libero ab velit voluptate sint animi, dolorem voluptatem, ad illo quo reprehenderit atque ex quisquam molestias ea tenetur corrupti, magni laboriosam sequi minima mollitia iure provident voluptatum ipsam ducimus? Tenetur.
-    Eaque voluptate ipsam, delectus temporibus nihil exercitationem commodi eos assumenda quod id, accusamus sequi quibusdam magni sint amet tempore reiciendis? Totam deleniti esse aut soluta ex nemo recusandae repellat labore.
-    Distinctio vitae nihil quaerat fuga fugit ipsa ullam necessitatibus sit hic eos, unde quisquam architecto numquam vel veritatis pariatur, culpa maiores beatae modi cumque, voluptatem suscipit laboriosam quam tempore! Quo!
-    Ipsam neque incidunt quia beatae tempora cum laboriosam magnam! Ut voluptatem velit, reiciendis aut dolorem eos veniam? Praesentium itaque sapiente temporibus doloribus voluptatem sint, ullam repellendus beatae quaerat vitae ipsum.
-    Amet voluptates sunt reiciendis quam? Soluta, veritatis quis optio sapiente a dolore sit perferendis, assumenda aut sunt architecto beatae incidunt nesciunt! Ipsa earum facilis, corporis voluptatum odit voluptas nemo modi.
-    Suscipit quos ab voluptates quae est obcaecati repellendus hic excepturi minus officia quis, fugit magnam reiciendis mollitia. Beatae doloremque natus eos culpa doloribus molestias ipsum? Labore repellendus nemo mollitia harum!
-    Minus incidunt eaque pariatur nisi ducimus ipsa! Molestias voluptates eaque veritatis eos nisi incidunt est. Ut nostrum itaque autem culpa! Expedita corporis quod corrupti qui tempora modi officiis quibusdam earum.
-    Sunt fugiat iusto odit enim nam cupiditate incidunt, eius nisi totam reiciendis perspiciatis inventore alias repudiandae cum voluptatem quos ratione, neque id dignissimos eos voluptas mollitia corporis temporibus in! Sit!
-    Voluptate nihil ex inventore! Culpa eligendi commodi eaque, illum totam dolorum exercitationem repellat quas voluptates sapiente alias id, harum similique iure, eos corrupti perferendis nulla quisquam recusandae facilis nam obcaecati!
-    Excepturi nihil velit, quasi porro quia delectus laborum eveniet unde maxime illo et beatae est nostrum ullam quod, dolore illum harum. Officiis, aliquam delectus deleniti est suscipit incidunt! Cumque, numquam.
-    Suscipit repellendus ut, laboriosam alias assumenda commodi? Magnam ratione fugit distinctio ducimus perferendis, incidunt sapiente nesciunt temporibus, nostrum nam minus expedita libero deleniti dicta beatae, numquam saepe! Neque, magni nam!
-    Debitis iste odit quas distinctio odio, ad cum deleniti nesciunt voluptates consequuntur modi pariatur veritatis sapiente. Earum praesentium similique laborum cumque. Eaque aspernatur est corrupti, debitis aut cumque maiores quo!
-    Ratione, dolorem rerum. Doloremque dolorem, dignissimos dolore tempore odit maxime! Animi enim iusto est voluptatum eaque assumenda, hic, accusantium libero dolorum illo commodi beatae tempore, impedit delectus soluta autem veniam!
-    Quo vitae aut dolorum, voluptas accusantium earum totam veniam alias doloribus maiores ex ullam exercitationem odit blanditiis ut velit expedita sed labore! Cumque voluptatibus magni dolorem quas a earum deserunt.
-    Dicta, ullam tempora, rerum hic accusantium, omnis esse repellendus quos enim ex voluptatibus eius explicabo. Praesentium et dicta, voluptatum fugit dolores, quae iusto explicabo earum nobis exercitationem hic deleniti expedita.
-    Modi, facilis, aut natus architecto repudiandae nobis nesciunt dolores rem tempore eos pariatur, molestiae tenetur totam laudantium impedit inventore ad. Eius dolor, voluptatum molestias earum nulla a delectus excepturi consequatur?
-    Incidunt cum beatae quibusdam sapiente, amet suscipit soluta praesentium dolorem similique quaerat, voluptatum ut explicabo rerum, nostrum qui minima aspernatur animi velit aliquam? Numquam illum ratione soluta nulla asperiores tempore.
-    Reiciendis, vero quia! Maxime dolorem voluptatem atque similique deleniti non quasi dolorum sapiente iure rem, cumque maiores saepe exercitationem inventore impedit vitae! Odio harum unde ea placeat aut accusantium quos.
-    Dignissimos doloremque totam quo, vitae, molestias amet repudiandae id perspiciatis obcaecati illum magnam accusamus nesciunt officiis, reprehenderit debitis. Nisi maxime incidunt mollitia nemo dicta, possimus rerum in doloremque commodi placeat?
-    Repudiandae quisquam quia nulla, sapiente at mollitia quaerat facere non quos dignissimos fugiat obcaecati labore laboriosam. Illum fugiat nam quo magnam, placeat soluta officia, quae expedita debitis optio eos eum!
-    Facilis voluptas voluptatibus amet, sapiente itaque alias quo blanditiis sed laudantium quas enim asperiores cumque totam nihil ducimus, repellat tenetur veritatis quisquam pariatur. Odit, blanditiis tenetur. Tempora earum facere alias.
-    Mollitia eius id molestias sint nobis, totam soluta, laboriosam itaque sequi ea architecto pariatur amet deleniti tempore nihil doloremque nostrum suscipit omnis quae, corrupti praesentium impedit nesciunt? Eos, illo quasi?
-    Repellendus dolorum animi assumenda, doloremque minus recusandae error iure ipsa ab perspiciatis doloribus, illo delectus molestiae incidunt debitis amet! Delectus adipisci quibusdam, sint dolorum et omnis ad repellat. Nihil, doloribus.
-    Odio unde nesciunt aliquid corrupti, laborum possimus sapiente. Magni eveniet excepturi repellat, sed, voluptas eos eius adipisci nostrum illum ea quam facere quos expedita optio amet esse sunt repudiandae delectus.
-    Magnam provident earum possimus aut quia unde quod nesciunt praesentium, sed ratione porro et tenetur optio iusto sit, sunt recusandae temporibus expedita delectus? Totam perspiciatis incidunt quibusdam sit, vitae aliquam.
-    Deleniti quidem illo eveniet, rem sint hic dolorem. Sequi magni soluta optio debitis, qui esse corporis quisquam deleniti sunt similique maxime possimus dolor corrupti dolorem explicabo nemo blanditiis quia laborum!
-    Quisquam architecto, quia iure inventore hic tempore nisi tenetur assumenda magni aut quas adipisci illo rerum doloremque, debitis accusantium. Dolorem, delectus rem rerum ipsa earum velit praesentium consectetur deserunt unde!
-    Sed repellendus iusto aperiam pariatur voluptatum, quam numquam distinctio minima unde voluptas ratione laudantium, voluptatem quis ducimus tempora vitae harum, aspernatur possimus corporis explicabo magni consequuntur quas voluptate autem! Debitis?
-    Ut modi voluptates quidem excepturi, aliquid vero accusamus? Pariatur unde laboriosam consequuntur alias ad voluptatibus. Cumque et quas similique eius, assumenda facere blanditiis, architecto magnam maxime animi ipsa beatae recusandae?
-    Tenetur sed voluptate sit doloribus necessitatibus nulla est veniam delectus nam aspernatur, unde a odio voluptatum, dolor beatae laborum eligendi debitis? Aspernatur blanditiis asperiores, eaque reprehenderit sit quas illum pariatur?
-    Autem inventore possimus repudiandae, reprehenderit harum molestiae libero, eligendi fuga aliquid laboriosam esse sed itaque praesentium ratione voluptates consequuntur qui recusandae fugiat! Voluptatem ea doloremque explicabo, repudiandae natus aliquam eum.
-    Repellendus natus iusto hic ex accusamus eum velit? Quam laborum sunt natus repellat, nisi, hic voluptatem unde quibusdam dolore alias suscipit numquam quasi consectetur quis magni nostrum amet, in ea!
-    Quis nobis fugiat voluptatibus, excepturi nihil ipsa sit optio cupiditate, officia, voluptate eligendi! Alias laboriosam nostrum aliquam commodi iste inventore cum. Itaque eius dolor, porro natus et officia possimus obcaecati?
-    Aliquid expedita saepe libero enim aliquam, vero similique ex quae inventore temporibus hic, laboriosam officiis eius repellendus dolorum placeat, iusto ipsum magnam quaerat! Repudiandae neque minima ex, quo pariatur voluptatibus.
-    Quia quos cumque libero officia adipisci alias ex in doloremque, ea optio obcaecati neque saepe iure cupiditate voluptatibus veniam aperiam possimus quas, debitis vero modi deserunt nostrum reprehenderit. Cumque, a?
-    Commodi aliquid maiores nulla, ipsam velit cupiditate quisquam vitae modi amet nemo magni provident? Sit beatae doloribus saepe delectus nesciunt rem obcaecati consequatur laboriosam totam atque adipisci at, eveniet voluptate?
-    Reprehenderit earum excepturi officiis quo esse quia architecto! Dolor, ipsum facere. Corporis id iste odit aspernatur dignissimos aliquam beatae, illo officiis ullam cupiditate asperiores. Dolorum voluptate laboriosam aperiam similique impedit.
-    Deleniti repellat accusantium aperiam porro hic perferendis quis tempore provident accusamus, vel quaerat dolor unde velit iure eum voluptatem amet. Beatae repellat totam blanditiis quia praesentium cupiditate hic reiciendis dignissimos!
-    Sapiente magnam recusandae, hic, porro tempore non laudantium labore quidem totam iste id qui nobis perferendis! Tempora magni soluta omnis autem. Exercitationem veritatis soluta molestias nulla deserunt, nostrum totam quia.
-    Necessitatibus, numquam? Quis quisquam in reiciendis ipsa expedita, repellat laboriosam quasi quaerat explicabo ipsum amet facere voluptatem, suscipit ab dolorem iure nostrum animi rerum nulla rem dolor tempore nisi vero.
-    Eos fugiat architecto dolor officiis sit tempora magnam, dignissimos rem nesciunt dolores tenetur, explicabo nobis, reiciendis itaque praesentium iste commodi reprehenderit accusantium? Fuga accusamus unde possimus itaque excepturi? A, expedita.
-    Ea, fugit repudiandae? Nostrum ullam iusto officiis alias vero ipsa reiciendis labore aspernatur voluptatum reprehenderit, eligendi velit ab fugiat accusamus assumenda dolore enim quos, amet harum ut aliquid odit quasi!
-    Voluptatum reprehenderit officiis voluptas pariatur ullam esse ea, tempore eligendi quisquam veniam similique sapiente enim vero corrupti maxime, velit qui quaerat aliquam odit temporibus cum ipsam, porro cumque. Laboriosam, est?
-    Veritatis quis perspiciatis totam quisquam, consequuntur autem dignissimos animi magni odio optio est labore ab officia laborum sit tenetur et cum ullam! In labore animi, earum cumque amet adipisci illum.
-    Sapiente blanditiis repellat culpa expedita. Provident, aliquid nobis quos magnam quidem iste aliquam ipsum exercitationem similique consequatur commodi illum odio dolorem. Minus perspiciatis earum iste dolorem temporibus neque? Officiis, qui!
-    Odio sint distinctio quisquam corrupti ea, animi consequuntur non. Repellendus nisi nam ducimus, quaerat ut ipsum provident enim, voluptates dicta nemo doloribus? Nam eius minus velit eos perferendis. Error, fugit!
-    Error suscipit asperiores nobis explicabo unde reiciendis nam esse. Incidunt, optio? Impedit, natus harum minima obcaecati labore atque dolores dignissimos quos mollitia suscipit assumenda aliquam ducimus sint modi animi excepturi.
-    Debitis, veritatis ducimus amet minima aut accusantium placeat totam mollitia ratione odio nostrum laboriosam. Debitis, est ducimus optio obcaecati facilis, nam nulla quae cupiditate provident ad ab? Provident, molestias amet?
-    Doloribus voluptas, commodi voluptate voluptates et numquam, natus ad repudiandae fugiat molestias, perspiciatis laboriosam dolore aut ducimus id! Amet, velit. Numquam, accusantium aliquid. Perspiciatis nobis perferendis, aliquid doloribus magni architecto!
-    Quasi totam, vel magnam ullam at soluta delectus nisi consequatur aut provident, ducimus omnis odio atque minus eveniet fugit aperiam facilis possimus eum aliquam. Sint non reiciendis dicta magnam et.
-    Eum, corporis. Quod, rerum quam nemo vitae ipsa architecto commodi iure tempora asperiores! Accusantium magnam incidunt hic ipsam alias repellendus. Facilis iure, reiciendis libero quod iste laudantium sunt fugit necessitatibus.
-    Libero dolores perferendis qui itaque doloremque possimus necessitatibus cum adipisci mollitia! Nostrum, iusto, molestiae aperiam natus consequatur porro magni vero nam, labore vel dolores nulla quidem quasi magnam neque ab?
-    Accusantium temporibus obcaecati, quae tenetur explicabo illum perspiciatis nam eius aliquid vero numquam, magni nobis impedit soluta tempora et optio atque omnis nisi neque vitae eaque praesentium! Alias, impedit voluptate?
-    Dolore blanditiis nostrum modi, vitae deleniti nisi similique expedita unde voluptatum consequatur, sunt ipsum recusandae optio nesciunt eligendi doloribus beatae nihil itaque natus minima. Quod laboriosam vel at ab enim.
-    Blanditiis excepturi vitae dignissimos dicta et ut enim ducimus cumque optio doloremque officia assumenda voluptatum numquam libero sequi, rerum aperiam fuga nam officiis inventore. Est blanditiis in deserunt aspernatur fuga!
-    Asperiores unde error dolor aliquam aut ab voluptatem placeat illo, repellat, recusandae voluptas! Mollitia magnam debitis cupiditate corporis libero unde quod tempora quas dolorem repudiandae, omnis quis voluptates exercitationem id.
-    Repellat odit unde amet, ipsam quam odio repudiandae alias dolorem aperiam facilis magnam aliquam, eveniet nisi veniam. Nihil eos atque deleniti, et corrupti tempora, error laudantium sed, officiis quibusdam blanditiis.
-    Incidunt libero illo reprehenderit, nulla perferendis quae est, nemo, odio optio eveniet cumque aut unde rerum error dolorem iure nam totam molestias? Repudiandae doloribus ducimus sit harum voluptas ad rerum?
-    Asperiores, praesentium rem? Unde ullam, repellat minima quidem debitis sit nisi ipsa harum fuga iusto exercitationem quia optio doloremque. Aut praesentium provident officiis, ullam cupiditate natus nostrum dolorum ut itaque.
-    Laudantium laboriosam dolore quaerat voluptatem harum repudiandae excepturi, architecto, itaque nesciunt quidem illum ipsa provident. Numquam, veniam accusantium voluptates neque beatae atque provident architecto rerum iusto minima ipsam, molestias sequi.
-    Sint pariatur quo perspiciatis ipsa repellat commodi ut laudantium, nemo debitis fugiat perferendis, dolorum autem, porro quis velit maxime illum esse nisi id iste? Hic voluptates quia explicabo provident incidunt!
-    Doloremque iure quisquam quaerat, veniam reprehenderit doloribus praesentium, dignissimos, error provident ipsum dolorem voluptates consequatur tempore blanditiis. Dignissimos, voluptatibus nisi saepe beatae sint possimus consectetur deleniti amet ea, illo est.
-    Sunt voluptatibus ducimus quis sit necessitatibus aperiam aut praesentium numquam minima cum dolorem explicabo, possimus quasi dicta ratione tempora iusto iste! Quisquam natus amet voluptatum commodi doloremque in veritatis similique?
-    Magni adipisci ullam est veniam quo. Earum possimus veniam consequuntur dicta eaque! Obcaecati, aut perspiciatis rerum saepe inventore nihil ad non iste hic a voluptas labore voluptate minima quidem aliquid.
-    Ea sunt ratione temporibus eligendi odio corrupti optio eaque voluptate labore quidem a incidunt reprehenderit voluptatum fugiat iure deserunt fuga neque, soluta similique tempora voluptatem! Quis, enim. Aut, ut ad?
-    Reprehenderit similique mollitia debitis quasi, ullam aliquid laborum aut expedita quaerat iusto modi maxime, consequuntur sit enim, maiores explicabo rem saepe accusamus eligendi magnam. Consequuntur inventore vero vel quaerat odit?
-    Corporis quod officiis possimus esse, labore modi earum aliquid nesciunt corrupti laudantium libero delectus nam, necessitatibus vel blanditiis tempore. Totam eos quidem laboriosam nobis saepe doloribus voluptatibus architecto molestiae! Ducimus.
-    Nam aut ipsa itaque, nostrum nihil ratione alias, voluptas eveniet molestiae enim nemo sapiente labore odit a aspernatur natus eius corrupti ipsum obcaecati, veritatis officiis facere quo laborum. Consequatur, mollitia!
-    Autem debitis et natus dolore, ipsa asperiores aperiam ut sed distinctio fugit numquam a quas iure ad tempora laudantium nobis, quae vitae dolores unde error sint saepe cupiditate tempore. Quos.
-    Dignissimos soluta itaque quibusdam quos, voluptatem officia. Natus cupiditate magnam, et id odio consequatur corporis molestias. Placeat assumenda dignissimos sapiente eaque, officia quos voluptatibus id culpa minus, quasi, praesentium expedita.
-    Consequuntur deleniti quis sunt velit placeat. Laboriosam exercitationem similique modi maxime fugit dicta quibusdam enim nihil veritatis recusandae voluptas laborum amet esse, corrupti alias culpa reiciendis placeat maiores explicabo totam.
-    Numquam harum officia suscipit, id distinctio eius dolorum eos voluptatibus reiciendis maiores culpa. Aperiam quasi accusantium eos tempora? Magni sed id debitis laudantium eaque, natus nemo rerum deleniti vero nostrum.
-    Odio, ipsa possimus obcaecati unde quia laborum, maxime itaque dolor iusto, sunt distinctio? Deserunt voluptatibus dignissimos totam animi explicabo corrupti, vitae, labore maxime aliquam quas ducimus a facilis quam consequatur!
-    Fuga, temporibus autem. Dolorum officiis quidem praesentium doloremque laboriosam ipsam quas quibusdam excepturi quis repudiandae magnam nam ut vel vero animi, iste nemo saepe accusamus? Quasi veniam aliquid nihil quaerat!
-    Similique dolorem ullam, vero sapiente est velit esse optio, id fuga nihil tempora delectus nam adipisci accusamus illum. Perferendis rerum quasi velit architecto expedita consequuntur cum consequatur similique quae impedit!
-    Nostrum obcaecati amet ipsa. Veritatis suscipit iste officia nesciunt quasi beatae doloribus, id nemo laboriosam a ipsa assumenda facere ipsum. Quos labore alias non quae eaque quibusdam placeat, incidunt tenetur!
-    Optio architecto, delectus tempore quia voluptatibus esse provident autem amet cum aliquid consequuntur dicta quod magni quos? Sequi, numquam reiciendis dolor saepe suscipit atque doloremque quis earum, itaque cupiditate omnis.
-    Mollitia commodi quo vel veniam labore. Reiciendis error vitae sequi facilis quis alias numquam autem optio tempore neque? Laudantium, aperiam. Praesentium expedita ex laboriosam recusandae quod esse amet culpa natus!
-    Minus architecto cum corrupti accusamus id fugiat quod, inventore eum eos assumenda veritatis? Dolores sed atque a ratione perferendis recusandae, culpa maxime, labore dolorum odio aliquam in commodi temporibus numquam!
-    Autem odit fugit quaerat eaque sit dolorem voluptatum doloremque placeat! Perferendis autem beatae totam vero necessitatibus rem culpa illum. Animi tempora atque nulla officiis laudantium rem velit sunt? Et, sequi.
-    Nulla eaque veritatis et sunt totam pariatur, corrupti, tempora mollitia deleniti incidunt, repellendus nostrum laborum accusantium ut optio sapiente illo corporis temporibus nam maiores. Reprehenderit omnis quisquam doloribus libero reiciendis!
-    Voluptatem culpa non minima neque? Molestias ipsa ducimus, doloremque, illum rerum expedita, veniam nam fugiat numquam tempore cupiditate distinctio neque explicabo ea possimus nisi! Voluptatibus repellendus sunt et delectus iusto.
-    Recusandae voluptas repellendus quam nobis quaerat cupiditate dolor ipsa obcaecati dolorem tempora nam magni itaque voluptatem tempore veritatis cumque aperiam quo animi eum, minus consequatur saepe illum eaque! Earum, magni?
-    Natus saepe expedita commodi magni soluta, ad, maiores deserunt dicta vitae aut assumenda, at cumque id fugit nam. Deleniti atque quaerat voluptas optio doloremque temporibus laborum consequatur asperiores nulla at!
-    Corporis libero optio hic assumenda, doloribus vel minus debitis excepturi quisquam similique sed officia provident, veniam commodi earum esse blanditiis nesciunt dolore rem? Magni quia inventore temporibus quos itaque provident!
-    Quidem reiciendis, veritatis itaque magnam expedita iste? Aliquam et doloremque reiciendis magnam corrupti itaque quasi, harum nostrum omnis quaerat iure, eum provident. Repudiandae saepe dolorem doloremque nesciunt! Excepturi, temporibus consequatur.
-    Aut in quisquam praesentium unde quaerat, atque optio blanditiis provident dolorum odit maiores ab laborum soluta debitis accusantium amet voluptate, veritatis fuga, suscipit animi. Dolorum sint tenetur nisi perspiciatis libero?
-    </p>
-</div> )
+"use client";
+
+import { useState, useEffect } from 'react';
+
+// Componente SVG para los iconos (no modificables por el admin)
+const IconSVG = ({ type }) => {
+  switch (type) {
+    case 'natural':
+      return (
+        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="25" cy="25" r="23" fill="#E8F5E9" stroke="#4CAF50" strokeWidth="2"/>
+          <path d="M15 25L22 32L35 19" stroke="#4CAF50" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      );
+    case 'frutos':
+      return (
+        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="25" cy="25" r="23" fill="#FCE4EC" stroke="#E91E63" strokeWidth="2"/>
+          <path d="M25 15C28 15 35 19 35 27C35 33 30 35 25 35C20 35 15 33 15 27C15 19 22 15 25 15Z" fill="#E91E63"/>
+          <circle cx="22" cy="23" r="2" fill="white"/>
+          <circle cx="28" cy="23" r="2" fill="white"/>
+        </svg>
+      );
+    case 'miel':
+      return (
+        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="25" cy="25" r="23" fill="#FFF8E1" stroke="#FFA000" strokeWidth="2"/>
+          <path d="M32 20L25 15L18 20V30L25 35L32 30V20Z" fill="#FFA000"/>
+          <path d="M25 35V25M25 25V15M25 25L18 20M25 25L32 20" stroke="#FFC107" strokeWidth="1.5"/>
+        </svg>
+      );
+    case 'pack':
+      return (
+        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="25" cy="25" r="23" fill="#E3F2FD" stroke="#2196F3" strokeWidth="2"/>
+          <rect x="15" y="18" width="20" height="14" rx="2" fill="#2196F3"/>
+          <path d="M22 25L25 28L28 25" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M25 28V22" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      );
+    default:
+      return null;
+  }
+};
+
+// Componente de característica con SVG (no modificable por el admin)
+const FeatureSVG = ({ type }) => {
+  switch (type) {
+    case 'natural':
+      return (
+        <svg width="70" height="70" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="35" cy="35" r="35" fill="#E8F5E9"/>
+          <path d="M20 38C20 25 35 25 45 35C40 45 30 50 20 38Z" fill="#4CAF50"/>
+          <path d="M38 20C47 28 45 40 35 45C25 40 25 25 38 20Z" fill="#4CAF50"/>
+        </svg>
+      );
+    case 'proteina':
+      return (
+        <svg width="70" height="70" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="35" cy="35" r="35" fill="#E8F5E9"/>
+          <path d="M25 20L35 25V50L25 45V20Z" fill="#4CAF50"/>
+          <path d="M35 25L45 20V45L35 50V25Z" fill="#2E7D32"/>
+          <path d="M30 32V40" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M40 32V40" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      );
+    case 'artesanal':
+      return (
+        <svg width="70" height="70" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="35" cy="35" r="35" fill="#E8F5E9"/>
+          <path d="M25 20C22 20 20 22 20 25C20 28 22 30 25 30H45C48 30 50 32 50 35C50 38 48 40 45 40H25C22 40 20 42 20 45C20 48 22 50 25 50H45" stroke="#4CAF50" strokeWidth="3" strokeLinecap="round"/>
+        </svg>
+      );
+    default:
+      return null;
+  }
+};
+
+// Componente de tarjeta de producto
+const ProductCard = ({ 
+  title, 
+  description, 
+  iconType, 
+  price, 
+  benefits,
+  imageUrl
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  return (
+    <div 
+      className="card h-100 border-0 shadow-sm rounded-lg overflow-hidden"
+      style={{ 
+        transform: isHovered ? 'translateY(-5px)' : 'translateY(0)',
+        transition: 'transform 0.3s ease-in-out',
+        maxWidth: '350px',
+        margin: '0 auto'
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Canvas para la imagen del producto (placeholder si no hay imagen) */}
+      <div className="position-relative bg-light" style={{height: '200px'}}>
+        {imageUrl ? (
+          <img src={imageUrl} className="w-100 h-100" alt={title} style={{objectFit: 'cover'}} />
+        ) : (
+          <canvas 
+            width="350" 
+            height="200" 
+            id={`canvas-${title.toLowerCase().replace(/\s+/g, '-')}`}
+            className="w-100 h-100"
+            style={{backgroundColor: '#f8f9fa'}}
+          />
+        )}
+        <div className="position-absolute top-0 end-0 m-3">
+          <IconSVG type={iconType} />
+        </div>
+      </div>
+      
+      <div className="card-body p-4">
+        <h3 className="card-title h5 fw-bold mb-3">{title}</h3>
+        <p className="card-text text-muted mb-3">{description}</p>
+        
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h4 className="price-tag fw-bold text-success mb-0">{price}</h4>
+          <span className="badge bg-success bg-opacity-10 text-success px-2 py-1">Artesanal</span>
+        </div>
+        
+        <h5 className="benefits-title h6 text-uppercase text-muted small mb-2">Beneficios</h5>
+        <ul className="list-unstyled mb-4">
+          {benefits.map((benefit, index) => (
+            <li key={index} className="d-flex align-items-center mb-2">
+              <span className="text-success me-2">✓</span>
+              <span>{benefit}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      
+      <div className="card-footer bg-white border-0 p-4">
+        <button 
+          className={`btn btn-${isHovered ? 'success' : 'outline-success'} w-100`}
+          style={{ transition: 'all 0.3s ease' }}
+        >
+          Añadir al carrito
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Componente principal de servicios y página
+export default function ServicesPage() {
+  useEffect(() => {
+    initCanvas();
+  }, []);
+
+  const products = [
+    {
+      title: "Yogur Griego Natural",
+      description: "Cremoso y rico en proteínas. Perfecto como base para tus recetas fitness.",
+      iconType: "natural",
+      price: "$75",
+      benefits: ["20g de proteína", "Sin azúcares añadidos", "Cremoso y fresco"],
+      imageUrl: "" // El admin puede cambiar esto
+    },
+    {
+      title: "Yogur Griego con Frutos Rojos",
+      description: "Deliciosa combinación de yogur griego con frutos del bosque.",
+      iconType: "frutos",
+      price: "$85",
+      benefits: ["Antioxidantes naturales", "Bajo en calorías", "Alto valor nutricional"],
+      imageUrl: "" // El admin puede cambiar esto
+    },
+    {
+      title: "Yogur Griego con Miel",
+      description: "La dulzura natural de la miel combinada con nuestro yogur artesanal.",
+      iconType: "miel",
+      price: "$80",
+      benefits: ["Energizante natural", "Prebióticos", "Ideal para desayunos"],
+      imageUrl: "" // El admin puede cambiar esto
+    },
+    {
+      title: "Pack Fitness Semanal",
+      description: "Selección variada de yogures para toda tu semana de entrenamiento.",
+      iconType: "pack",
+      price: "$299",
+      benefits: ["7 yogures variados", "Guía nutricional", "Descuento por pack"],
+      imageUrl: "" // El admin puede cambiar esto
+    }
+  ];
+
+  return (
+    <div className="py-5">
+      <div className="container">
+        {/* Encabezado de la sección */}
+        <div className="text-center mb-5">
+          <h2 className="display-5 fw-bold mb-3">Yogur Griego Artesanal</h2>
+          <div className="mx-auto" style={{ maxWidth: '700px' }}>
+            <p className="lead text-muted">
+              Elaborado con los mejores ingredientes y métodos tradicionales para ofrecerte 
+              el mejor sabor y los máximos beneficios para tu salud y bienestar.
+            </p>
+          </div>
+        </div>
+
+        {/* Grid de productos */}
+        <div className="row g-4 mb-5">
+          {products.map((product, index) => (
+            <div key={index} className="col-12 col-md-6 col-lg-3">
+              <ProductCard {...product} />
+            </div>
+          ))}
+        </div>
+
+        {/* Características adicionales - usando SVG fijos */}
+        <div className="row mt-5 pt-5 border-top">
+          <div className="col-12 text-center mb-4">
+            <h3 className="h4 fw-bold">¿Por qué elegir nuestro yogur?</h3>
+          </div>
+          
+          <div className="col-md-4 mb-4 mb-md-0">
+            <div className="text-center">
+              <div className="mx-auto mb-3">
+                <FeatureSVG type="natural" />
+              </div>
+              <h4 className="h5 fw-bold">Ingredientes Naturales</h4>
+              <p className="text-muted px-3">Elaborado con leche de alta calidad y cultivos probióticos seleccionados.</p>
+            </div>
+          </div>
+          
+          <div className="col-md-4 mb-4 mb-md-0">
+            <div className="text-center">
+              <div className="mx-auto mb-3">
+                <FeatureSVG type="proteina" />
+              </div>
+              <h4 className="h5 fw-bold">Alto en Proteínas</h4>
+              <p className="text-muted px-3">Ideal para deportistas y personas con estilo de vida activo.</p>
+            </div>
+          </div>
+          
+          <div className="col-md-4">
+            <div className="text-center">
+              <div className="mx-auto mb-3">
+                <FeatureSVG type="artesanal" />
+              </div>
+              <h4 className="h5 fw-bold">Proceso Artesanal</h4>
+              <p className="text-muted px-3">Elaboración tradicional que maximiza sabor y beneficios nutricionales.</p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Banner promocional usando Canvas */}
+        <div className="row mt-5">
+          <div className="col-12">
+            <div className="card border-0 bg-success text-white rounded-lg overflow-hidden">
+              <div className="row g-0">
+                <div className="col-md-7 p-5 d-flex flex-column justify-content-center">
+                  <h2 className="h3 fw-bold mb-3">Primera compra con 15% de descuento</h2>
+                  <p className="mb-4">Usa el código <strong>FITHEALTH15</strong> en tu primera compra y recibe un 15% de descuento.</p>
+                  <div>
+                    <button className="btn btn-light text-success fw-bold px-4 py-2">Comprar ahora</button>
+                  </div>
+                </div>
+                <div className="col-md-5 d-none d-md-block position-relative">
+                  <canvas 
+                    id="promo-canvas" 
+                    width="400" 
+                    height="300"
+                    className="w-100 h-100"
+                    style={{backgroundColor: '#388E3C'}}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
-export default PageServices
+
+// Función para inicializar los canvas después de que se carga el componente
+const initCanvas = () => {
+  if (typeof window !== 'undefined') {
+    // Inicializar los canvas de productos
+    document.querySelectorAll('canvas[id^="canvas-"]').forEach(canvas => {
+      const ctx = canvas.getContext('2d');
+      // Dibujar un placeholder simple
+      ctx.fillStyle = '#f0f0f0';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Texto de placeholder
+      ctx.fillStyle = '#aaaaaa';
+      ctx.font = '16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Imagen del Producto', canvas.width/2, canvas.height/2);
+    });
+    
+    // Inicializar el canvas promocional
+    const promoCanvas = document.getElementById('promo-canvas');
+    if (promoCanvas) {
+      const ctx = promoCanvas.getContext('2d');
+      
+      // Fondo
+      ctx.fillStyle = '#388E3C';
+      ctx.fillRect(0, 0, promoCanvas.width, promoCanvas.height);
+      
+      // Dibujar yogur simple
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(200, 150, 80, 0, Math.PI*2);
+      ctx.fill();
+      
+      ctx.fillStyle = '#e0e0e0';
+      ctx.beginPath();
+      ctx.arc(200, 150, 70, 0, Math.PI*2);
+      ctx.fill();
+      
+      // Texto promocional
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 24px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('15% OFF', 200, 70);
+    }
+  }
+};

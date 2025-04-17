@@ -26,6 +26,7 @@
   "devDependencies": {
     "@types/react": "18.3.11",
     "eslint": "^8",
-    "eslint-config-next": "14.2.15"
+    "eslint-config-next": "14.2.15",
+    "firebase-functions": "^4.4.0"
   }
 }
