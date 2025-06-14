@@ -1,5 +1,4 @@
-
-"user client"
+"use client"
 
 async function getUser(id){
     
@@ -16,16 +15,16 @@ async function UsersPage ({params}){
  
 return ( 
 <div className="row">
-     <div className="col-md-6-offset md-3">
+     <div className="col-md-6 offset-md-3">
         <div className="card">
              <div className="card-header text-center">
-                <img src={user.avatar} alt="" />
+                <img src={user.avatar} alt={user.email} className="rounded-circle" />
             </div>
     
         <div className='card-body'>        
     
         <h3> 
-            {user.id} {user.last_name} {user.fist_name} 
+            {user.id} {user.last_name} {user.first_name} 
             
         </h3>
         <p>

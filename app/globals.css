@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Light theme (default) */
+  --bg-color: #ffffff;
+  --text-color: #333333;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --primary-color: #2563eb;
+  --secondary-color: #64748b;
+  --accent-color: #10b981;
+  --hover-color: #f1f5f9;
+}
+
+  
+.dark-theme {
+  /* Dark theme */
+  --bg-color: #0f172a;
+  --text-color: #f8fafc;
+  --card-bg: #1e293b;
+  --border-color: #334155;
+  --primary-color: #3b82f6;
+  --secondary-color: #94a3b8;
+  --accent-color: #34d399;
+  --hover-color: #1e293b;
+}
+
+/* Base styles */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Card styles */
+.card {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Button styles */
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+/* Form controls */
+.form-control {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+.form-control:focus {
+  background-color: var(--card-bg);
+  border-color: var(--primary-color);
+  color: var(--text-color);
+}
+
+/* Navbar styles */
+.navbar {
+  background-color: var(--bg-color) !important;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-dark {
+  background-color: var(--bg-color) !important;
+}
+
+.navbar-light {
+  background-color: var(--bg-color) !important;
+}
+
+/* Links */
+a {
+  color: var(--primary-color);
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--accent-color);
+}
+
+/* Container */
+.container {
+  background-color: var(--bg-color);
+  transition: background-color 0.3s ease;
+}
+
+/* List group */
+.list-group-item {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+/* Alert */
+.alert {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+/* Table */
+.table {
+  color: var(--text-color);
+}
+
+/* Modal */
+.modal-content {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+/* Estilos generales */
+.app-container {
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+/* Transiciones suaves para el cambio de tema */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+} 

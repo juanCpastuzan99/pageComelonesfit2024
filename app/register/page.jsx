@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { app } from "../firebase/firebaseConfig";
 import { useRouter } from "next/navigation";
 
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 // SVG para decoración
 const SignupDecoration = () => {
@@ -118,6 +120,15 @@ export default function SignUpPage() {
       // Actualizar el perfil con nombre y apellido
       await updateProfile(userCredential.user, {
         displayName: `${formData.firstName} ${formData.lastName}`
+      });
+
+      // Guardar datos adicionales en Firestore
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        createdAt: new Date().toISOString(),
+        role: "user"
       });
       
       console.log("Usuario registrado:", userCredential.user);

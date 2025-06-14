@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { app } from "../firebase/firebaseConfig"; 
 import { useRouter } from "next/navigation"; 
-
-const auth = getAuth(app);
+import { useDispatch, useSelector } from "react-redux";
+import { setUser, setLoading, setError } from "../../store/slices/userSlice";
+import Link from "next/link";
+import { authService } from "../services/authService";
 
 // SVG de logo para la página de login
 const LoginLogo = () => {
@@ -39,103 +39,48 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const dispatch = useDispatch();
+  const { loading, error: reduxError } = useSelector((state) => state.user);
 
-  // Manejar iniciar sesión con email y contraseña
-  const handleEmailLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      console.log("Usuario autenticado:", user);
-      router.push('/');
-    } catch (err) {
-      setError(getErrorMessage(err.code));
-      console.error("Error de autenticación:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Manejar iniciar sesión con Google
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      console.log("Usuario autenticado con Google:", user);
-      router.push('/');
-    } catch (err) {
-      setError(getErrorMessage(err.code));
-      console.error("Error de autenticación con Google:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Obtener mensajes de error amigables
-  const getErrorMessage = (errorCode) => {
-    switch (errorCode) {
-      case 'auth/invalid-email':
-        return 'El formato del correo electrónico no es válido.';
-      case 'auth/user-disabled':
-        return 'Esta cuenta ha sido deshabilitada.';
-      case 'auth/user-not-found':
-        return 'No existe una cuenta con este correo electrónico.';
-      case 'auth/wrong-password':
-        return 'La contraseña es incorrecta.';
-      case 'auth/invalid-credential':
-        return 'Credenciales inválidas. Por favor verifica tu correo y contraseña.';
-      case 'auth/too-many-requests':
-        return 'Demasiados intentos fallidos. Intenta de nuevo más tarde.';
-      default:
-        return 'Error al iniciar sesión. Por favor intenta de nuevo.';
-    }
-  };
-
-  // Inicializar canvas decorativo
   useEffect(() => {
-    const initCanvasDecoration = () => {
-      const canvas = document.getElementById('login-decoration');
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        const width = canvas.width;
-        const height = canvas.height;
-        
-        // Dibuja elementos decorativos
-        for (let i = 0; i < 20; i++) {
-          const x = Math.random() * width;
-          const y = Math.random() * height;
-          const size = Math.random() * 15 + 5;
-          
-          ctx.beginPath();
-          ctx.arc(x, y, size, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(76, 175, 80, ${Math.random() * 0.2 + 0.1})`;
-          ctx.fill();
-        }
-        
-        // Dibuja líneas
-        for (let i = 0; i < 10; i++) {
-          const startX = Math.random() * width;
-          const startY = Math.random() * height;
-          const endX = startX + (Math.random() - 0.5) * 150;
-          const endY = startY + (Math.random() - 0.5) * 150;
-          
-          ctx.beginPath();
-          ctx.moveTo(startX, startY);
-          ctx.lineTo(endX, endY);
-          ctx.strokeStyle = `rgba(76, 175, 80, ${Math.random() * 0.1 + 0.05})`;
-          ctx.lineWidth = Math.random() * 2 + 1;
-          ctx.stroke();
-        }
-      }
-    };
-    
-    initCanvasDecoration();
+    // Initialize canvas decoration
+    const canvas = document.getElementById('login-decoration');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      const drawDecoration = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#E8F5E9';
+        ctx.beginPath();
+        ctx.arc(canvas.width/2, canvas.height/2, 200, 0, Math.PI * 2);
+        ctx.fill();
+      };
+      drawDecoration();
+    }
   }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    dispatch(setLoading(true));
+    try {
+      const user = await authService.loginWithEmail(email, password, rememberMe);
+      dispatch(setUser(user));
+      router.push("/dashboard");
+    } catch (error) {
+      dispatch(setError(error.message));
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    dispatch(setLoading(true));
+    try {
+      const user = await authService.loginWithGoogle();
+      dispatch(setUser(user));
+      router.push("/dashboard");
+    } catch (error) {
+      dispatch(setError(error.message));
+    }
+  };
 
   return (
     <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light py-5">
@@ -161,12 +106,12 @@ export default function LoginPage() {
               </div>
               
               <div className="card-body p-4 p-lg-5">
-                {error && (
+                {reduxError && (
                   <div className="alert alert-danger d-flex align-items-center" role="alert">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
                       <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
                     </svg>
-                    <div>{error}</div>
+                    <div>{reduxError}</div>
                   </div>
                 )}
                 
@@ -174,9 +119,15 @@ export default function LoginPage() {
                   <button 
                     onClick={handleGoogleLogin} 
                     className="btn btn-outline-secondary w-100 d-flex justify-content-center align-items-center py-2"
-                    disabled={isLoading}
+                    disabled={loading}
                   >
-                    <GoogleIcon />
+                    {loading ? (
+                      <div className="spinner-border spinner-border-sm me-2" role="status">
+                        <span className="visually-hidden">Cargando...</span>
+                      </div>
+                    ) : (
+                      <GoogleIcon />
+                    )}
                     <span className="ms-2">Continuar con Google</span>
                   </button>
                 </div>
@@ -185,7 +136,7 @@ export default function LoginPage() {
                   <p className="text-center fw-bold mx-3 mb-0 text-muted">O</p>
                 </div>
                 
-                <form onSubmit={handleEmailLogin}>
+                <form onSubmit={handleSubmit}>
                   <div className="form-floating mb-3">
                     <input
                       type="email"
@@ -195,6 +146,7 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      disabled={loading}
                     />
                     <label htmlFor="emailInput">Correo electrónico</label>
                   </div>
@@ -208,30 +160,44 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      disabled={loading}
                     />
                     <label htmlFor="passwordInput">Contraseña</label>
                   </div>
                   
                   <div className="d-flex justify-content-between mb-4">
                     <div className="form-check">
-                      <input className="form-check-input" type="checkbox" id="rememberMe" />
+                      <input 
+                        className="form-check-input" 
+                        type="checkbox" 
+                        id="rememberMe" 
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        disabled={loading}
+                      />
                       <label className="form-check-label" htmlFor="rememberMe">
                         Recordarme
                       </label>
                     </div>
-                    <a href="/forgot-password" className="text-success text-decoration-none">¿Olvidaste tu contraseña?</a>
+                    <Link href="/forgot-password" className="text-success text-decoration-none">
+                      ¿Olvidaste tu contraseña?
+                    </Link>
                   </div>
                   
                   <div className="d-grid">
                     <button 
                       type="submit" 
                       className="btn btn-success py-2"
-                      disabled={isLoading}
+                      disabled={loading}
                     >
-                      {isLoading ? (
-                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                      ) : null}
-                      Iniciar Sesión
+                      {loading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                          Iniciando sesión...
+                        </>
+                      ) : (
+                        'Iniciar Sesión'
+                      )}
                     </button>
                   </div>
                 </form>
@@ -239,7 +205,7 @@ export default function LoginPage() {
               
               <div className="card-footer text-center py-3 bg-light border-0">
                 <div className="text-muted">
-                  ¿No tienes una cuenta? <a href="../signUp" className="text-success text-decoration-none">Regístrate</a>
+                  ¿No tienes una cuenta? <Link href="../signUp" className="text-success text-decoration-none">Regístrate</Link>
                 </div>
               </div>
             </div>
