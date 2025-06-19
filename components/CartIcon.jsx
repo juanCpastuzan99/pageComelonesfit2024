@@ -3,6 +3,7 @@ import { useCart } from '../app/context/CartContext';
 import { useAuth } from '../app/context/AuthContext';
 import CheckoutModal from './CheckoutModal';
 import { formatCurrency } from '../utils/priceFormatter';
+import Image from 'next/image';
 
 const CartIcon = () => {
   const { 
@@ -121,9 +122,11 @@ const CartIcon = () => {
                 <div className="max-h-64 overflow-y-auto space-y-3 mb-4">
                   {items.map((item) => (
                     <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      <img
+                      <Image
                         src={item.image || item.imageUrl || "https://via.placeholder.com/50x50?text=Sin+Imagen"}
                         alt={item.name}
+                        width={48}
+                        height={48}
                         className="w-12 h-12 object-cover rounded-lg"
                       />
                       <div className="flex-1 min-w-0">

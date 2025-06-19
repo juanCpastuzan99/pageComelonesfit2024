@@ -1,28 +1,38 @@
 'use client';
 // Forzar redeploy en Vercel
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-const PaymentCancelPage = () => {
+function PaymentCancelContent() {
   const searchParams = useSearchParams();
   const [orderDetails, setOrderDetails] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Obtener parámetros de la URL
-    const orderId = searchParams.get('orderId');
-    const reason = searchParams.get('reason') || 'Pago cancelado por el usuario';
-    
-    if (orderId) {
-      setOrderDetails({
-        orderId,
-        reason,
-        status: 'cancelled'
-      });
+    try {
+      console.log('[PaymentCancelPage] searchParams:', searchParams);
+      // Obtener parámetros de la URL
+      if (!searchParams) {
+        console.error('[PaymentCancelPage] searchParams es undefined o null');
+        setLoading(false);
+        return;
+      }
+      const orderId = searchParams.get('orderId');
+      const reason = searchParams.get('reason') || 'Pago cancelado por el usuario';
+      
+      if (orderId) {
+        setOrderDetails({
+          orderId,
+          reason,
+          status: 'cancelled'
+        });
+      }
+      setLoading(false);
+    } catch (e) {
+      console.error('[PaymentCancelPage] Error en useEffect:', e);
+      setLoading(false);
     }
-    
-    setLoading(false);
   }, [searchParams]);
 
   if (loading) {
@@ -137,6 +147,14 @@ const PaymentCancelPage = () => {
         </div>
       </div>
     </div>
+  );
+}
+
+const PaymentCancelPage = () => {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Cargando...</div>}>
+      <PaymentCancelContent />
+    </Suspense>
   );
 };
 

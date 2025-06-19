@@ -5,6 +5,7 @@ import { usePermissions } from '../app/hooks/usePermissions';
 import { productService } from '../app/services/productService';
 import EditProductModal from './EditProductModal';
 import { formatCurrency } from '../utils/priceFormatter';
+import Image from 'next/image';
 
 const ProductCard = ({ product, showDetails = false, onViewDetails, onAddToCartSuccess, showAdminOptions = false, onProductDeleted, onProductUpdated }) => {
   const { addToCart, isInCart, getItemQuantity } = useCart();
@@ -88,9 +89,11 @@ const ProductCard = ({ product, showDetails = false, onViewDetails, onAddToCartS
     <>
       <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group transform hover:-translate-y-1">
         <div className="relative h-48 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900">
-          <img
+          <Image
             src={product.imagen || product.image || product.imageUrl || "https://via.placeholder.com/500x300?text=Sin+Imagen"}
             alt={product.name}
+            width={500}
+            height={192}
             className="w-full h-full object-cover"
             onError={handleImageError}
           />

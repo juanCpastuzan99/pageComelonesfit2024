@@ -8,6 +8,7 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { useAuth } from '../app/context/AuthContext';
 import { updateProfile } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import Image from 'next/image';
 
 export default function AddMetricsModal({ isOpen, onClose, onSuccess }) {
   const { addMetrics } = useUserMetrics();
@@ -460,9 +461,11 @@ export function ChangeProfilePhotoModal({ isOpen, onClose, onSuccess }) {
             {preview && (
               <div className="flex flex-col items-center gap-2 mt-4">
                 <span className="text-xs text-slate-500 dark:text-slate-400">Vista previa:</span>
-                <img 
-                  src={preview} 
-                  alt="Vista previa" 
+                <Image
+                  src={preview}
+                  alt="Vista previa"
+                  width={128}
+                  height={128}
                   className="w-32 h-32 object-cover rounded-full border border-slate-200 dark:border-slate-600"
                   onError={() => setError('No se pudo cargar la vista previa de la imagen')}
                 />

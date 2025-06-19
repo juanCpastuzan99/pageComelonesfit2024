@@ -164,6 +164,27 @@ export const CartProvider = ({ children }) => {
   const { user } = useAuth();
   const { products } = useProducts();
 
+  // Función para cargar carrito desde la base de datos
+  const loadCartFromDatabase = async () => {
+    if (!user) return;
+
+    dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
+    try {
+      const cartData = await cartService.getCart(user.uid);
+      dispatch({ type: CART_ACTIONS.LOAD_CART, payload: cartData });
+    } catch (error) {
+      console.error('Error loading cart from database:', error);
+      dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Error al cargar el carrito' });
+    }
+  };
+
+  // Cargar carrito desde la base de datos cuando el usuario se autentica
+  useEffect(() => {
+    if (user) {
+      loadCartFromDatabase();
+    }
+  }, [user, loadCartFromDatabase]);
+
   // Cargar carrito desde localStorage al inicializar (para usuarios no autenticados)
   useEffect(() => {
     if (!user) {
@@ -176,13 +197,6 @@ export const CartProvider = ({ children }) => {
           console.error('Error al cargar el carrito local:', error);
         }
       }
-    }
-  }, [user]);
-
-  // Cargar carrito desde la base de datos cuando el usuario se autentica
-  useEffect(() => {
-    if (user) {
-      loadCartFromDatabase();
     }
   }, [user]);
 
@@ -222,20 +236,6 @@ export const CartProvider = ({ children }) => {
       }
     }
   }, [state.items, products, user]);
-
-  // Función para cargar carrito desde la base de datos
-  const loadCartFromDatabase = async () => {
-    if (!user) return;
-
-    dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
-    try {
-      const cartData = await cartService.getCart(user.uid);
-      dispatch({ type: CART_ACTIONS.LOAD_CART, payload: cartData });
-    } catch (error) {
-      console.error('Error loading cart from database:', error);
-      dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Error al cargar el carrito' });
-    }
-  };
 
   // Función para sincronizar carrito con la base de datos
   const syncCartWithDatabase = async () => {

@@ -5,6 +5,7 @@ import { paymentService } from '../app/services/paymentService';
 import { useToast } from '../app/hooks/useToast';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { formatCurrency } from '../utils/priceFormatter';
+import Image from 'next/image';
 
 const PAYMENT_METHODS = [
   { key: 'nequi', label: 'Nequi', type: 'auto' },
@@ -324,9 +325,11 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
                 {items.map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div className="flex items-center space-x-3">
-                      <img
+                      <Image
                         src={item.image || item.imageUrl || "https://via.placeholder.com/50x50"}
                         alt={item.name}
+                        width={48}
+                        height={48}
                         className="w-12 h-12 object-cover rounded-lg"
                       />
                       <div>
