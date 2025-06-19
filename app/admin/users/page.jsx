@@ -396,6 +396,7 @@ const EditUserModal = ({ user, isOpen, onClose, onSave, currentUser }) => {
 
 // Componente principal
 export default function AdminPage() {
+  // Hooks SIEMPRE al inicio
   const { user } = useAuth();
   const { isAdmin, loading: permissionsLoading } = usePermissions();
   const [users, setUsers] = useState([]);
