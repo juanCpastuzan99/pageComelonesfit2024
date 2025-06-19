@@ -411,6 +411,25 @@ export default function AdminPage() {
     recentUsers: 0
   });
 
+  useEffect(() => {
+    const unsubscribe = userService.onUsersChange((usersData) => {
+      setUsers(usersData);
+      // Calcular estadísticas
+      const totalUsers = usersData.length;
+      const adminUsers = usersData.filter(u => u.role === 'admin').length;
+      const visitorUsers = usersData.filter(u => u.role === 'visitor').length;
+      // Usuarios registrados en los últimos 7 días
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      const recentUsers = usersData.filter(u => 
+        u.createdAt && u.createdAt.toDate() > weekAgo
+      ).length;
+      setStats({ totalUsers, adminUsers, visitorUsers, recentUsers });
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
   // Verificar permisos
   if (permissionsLoading) {
     return (
@@ -435,30 +454,6 @@ export default function AdminPage() {
       </div>
     );
   }
-
-  // Cargar usuarios en tiempo real
-  useEffect(() => {
-    const unsubscribe = userService.onUsersChange((usersData) => {
-      setUsers(usersData);
-      
-      // Calcular estadísticas
-      const totalUsers = usersData.length;
-      const adminUsers = usersData.filter(u => u.role === 'admin').length;
-      const visitorUsers = usersData.filter(u => u.role === 'visitor').length;
-      
-      // Usuarios registrados en los últimos 7 días
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      const recentUsers = usersData.filter(u => 
-        u.createdAt && u.createdAt.toDate() > weekAgo
-      ).length;
-      
-      setStats({ totalUsers, adminUsers, visitorUsers, recentUsers });
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   // Cambiar rol de usuario
   const handleRoleChange = async (userId, newRole) => {

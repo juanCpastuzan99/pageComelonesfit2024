@@ -134,7 +134,7 @@ const ProductosDestacados = ({ showLogin = false, onShowLogin }) => {
             </div>
             <p className="text-gray-600 dark:text-gray-400">
               {busqueda 
-                ? `No se encontraron productos para "${busqueda}"` 
+                ? `No se encontraron productos para &quot;${busqueda}&quot;` 
                 : products.length === 0 
                   ? 'No hay productos disponibles. Agrega algunos productos en Firebase.' 
                   : 'No hay productos destacados disponibles'
