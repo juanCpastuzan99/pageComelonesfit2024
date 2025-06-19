@@ -116,7 +116,7 @@ const ProductosDestacados = ({ showLogin = false, onShowLogin }) => {
         {process.env.NODE_ENV === 'development' && (
           <div className="mb-4 p-2 bg-gray-100 dark:bg-gray-700 rounded text-xs">
             Debug: {products.length} productos totales, {productsFiltrados.length} filtrados, 
-            filtro: {filtro}, búsqueda: "{busqueda}", loading: {loading ? 'Sí' : 'No'}
+            filtro: {filtro}, búsqueda: {busqueda}, loading: {loading ? 'Sí' : 'No'}
           </div>
         )}
 
@@ -134,7 +134,7 @@ const ProductosDestacados = ({ showLogin = false, onShowLogin }) => {
             </div>
             <p className="text-gray-600 dark:text-gray-400">
               {busqueda 
-                ? <>No se encontraron productos para: {busqueda}</>
+                ? <>No hay resultados para tu búsqueda: {busqueda}</>
                 : products.length === 0 
                   ? 'No hay productos disponibles. Agrega algunos productos en Firebase.' 
                   : 'No hay productos destacados disponibles'
