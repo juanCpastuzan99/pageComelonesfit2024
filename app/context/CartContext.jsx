@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { cartService } from '../services/cartService';
-import { useProducts } from '../hooks/useProducts';
 
 // Estado inicial del carrito
 const initialState = {
@@ -21,8 +20,7 @@ const CART_ACTIONS = {
   LOAD_CART: 'LOAD_CART',
   SET_LOADING: 'SET_LOADING',
   SET_ERROR: 'SET_ERROR',
-  SYNC_CART: 'SYNC_CART',
-  REMOVE_DELETED_PRODUCTS: 'REMOVE_DELETED_PRODUCTS'
+  SYNC_CART: 'SYNC_CART'
 };
 
 // Reducer del carrito
@@ -128,19 +126,6 @@ const cartReducer = (state, action) => {
         error: null
       };
       
-    case CART_ACTIONS.REMOVE_DELETED_PRODUCTS: {
-      const { deletedProductIds } = action.payload;
-      const updatedItems = state.items.filter(item => !deletedProductIds.includes(item.id));
-      
-      return {
-        ...state,
-        items: updatedItems,
-        total: updatedItems.reduce((sum, item) => sum + ((item.price ?? item.precio ?? 0) * item.quantity), 0),
-        itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
-        error: null
-      };
-    }
-      
     default:
       return state;
   }
@@ -162,28 +147,6 @@ export const useCart = () => {
 export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
   const { user } = useAuth();
-  const { products } = useProducts();
-
-  // Función para cargar carrito desde la base de datos
-  const loadCartFromDatabase = async () => {
-    if (!user) return;
-
-    dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
-    try {
-      const cartData = await cartService.getCart(user.uid);
-      dispatch({ type: CART_ACTIONS.LOAD_CART, payload: cartData });
-    } catch (error) {
-      console.error('Error loading cart from database:', error);
-      dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Error al cargar el carrito' });
-    }
-  };
-
-  // Cargar carrito desde la base de datos cuando el usuario se autentica
-  useEffect(() => {
-    if (user) {
-      loadCartFromDatabase();
-    }
-  }, [user, loadCartFromDatabase]);
 
   // Cargar carrito desde localStorage al inicializar (para usuarios no autenticados)
   useEffect(() => {
@@ -200,6 +163,13 @@ export const CartProvider = ({ children }) => {
     }
   }, [user]);
 
+  // Cargar carrito desde la base de datos cuando el usuario se autentica
+  useEffect(() => {
+    if (user) {
+      loadCartFromDatabase();
+    }
+  }, [user]);
+
   // Guardar carrito en localStorage cuando cambie (solo para usuarios no autenticados)
   useEffect(() => {
     if (!user && !state.loading) {
@@ -211,31 +181,19 @@ export const CartProvider = ({ children }) => {
     }
   }, [state.items, state.total, state.itemCount, user, state.loading]);
 
-  // Limpieza automática de productos eliminados
-  useEffect(() => {
-    if (state.items.length > 0 && products.length > 0) {
-      const productIds = products.map(p => p.id);
-      const deletedProductIds = state.items
-        .filter(item => !productIds.includes(item.id))
-        .map(item => item.id);
-      
-      if (deletedProductIds.length > 0) {
-        console.log('🧹 Limpieza automática de productos eliminados:', deletedProductIds);
-        dispatch({ type: CART_ACTIONS.REMOVE_DELETED_PRODUCTS, payload: { deletedProductIds } });
-        
-        // Si el usuario está autenticado, actualizar en la base de datos
-        if (user) {
-          deletedProductIds.forEach(async (productId) => {
-            try {
-              await cartService.removeItemFromCart(user.uid, productId);
-            } catch (error) {
-              console.error('Error removing deleted product from database:', error);
-            }
-          });
-        }
-      }
+  // Función para cargar carrito desde la base de datos
+  const loadCartFromDatabase = async () => {
+    if (!user) return;
+
+    dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
+    try {
+      const cartData = await cartService.getCart(user.uid);
+      dispatch({ type: CART_ACTIONS.LOAD_CART, payload: cartData });
+    } catch (error) {
+      console.error('Error loading cart from database:', error);
+      dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Error al cargar el carrito' });
     }
-  }, [state.items, products, user]);
+  };
 
   // Función para sincronizar carrito con la base de datos
   const syncCartWithDatabase = async () => {
@@ -323,23 +281,6 @@ export const CartProvider = ({ children }) => {
     return item ? item.quantity : 0;
   };
 
-  const removeDeletedProducts = async (deletedProductIds) => {
-    dispatch({ type: CART_ACTIONS.REMOVE_DELETED_PRODUCTS, payload: { deletedProductIds } });
-    
-    // Si el usuario está autenticado, actualizar en la base de datos
-    if (user) {
-      try {
-        // Remover productos eliminados de la base de datos
-        for (const productId of deletedProductIds) {
-          await cartService.removeItemFromCart(user.uid, productId);
-        }
-      } catch (error) {
-        console.error('Error removing deleted products from database:', error);
-        dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Error al limpiar productos eliminados' });
-      }
-    }
-  };
-
   const value = {
     ...state,
     addToCart,
@@ -349,8 +290,7 @@ export const CartProvider = ({ children }) => {
     isInCart,
     getItemQuantity,
     syncCartWithDatabase,
-    loadCartFromDatabase,
-    removeDeletedProducts
+    loadCartFromDatabase
   };
 
   return (

@@ -196,10 +196,11 @@ export const cartService = {
   async syncCartWithDatabase(userId, localCart) {
     try {
       const dbCart = await this.getCart(userId);
-      
+      // Convertir ambos updatedAt a Date para comparar correctamente
+      const localUpdatedAt = new Date(localCart.updatedAt);
+      const dbUpdatedAt = new Date(dbCart.updatedAt);
       // Si el carrito local tiene más items o es más reciente, actualizar la BD
-      if (localCart.itemCount > dbCart.itemCount || 
-          localCart.updatedAt > dbCart.updatedAt) {
+      if (localCart.itemCount > dbCart.itemCount || localUpdatedAt > dbUpdatedAt) {
         await this.updateCart(userId, localCart);
         return localCart;
       } else {

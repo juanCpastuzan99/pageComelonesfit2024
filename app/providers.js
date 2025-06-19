@@ -5,6 +5,7 @@ import { store } from '../store/store';
 import { useSelector } from 'react-redux';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { SidebarProvider } from './context/SidebarContext';
 
 function ThemeWrapper({ children }) {
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
@@ -24,9 +25,11 @@ export function Providers({ children }) {
     <Provider store={store}>
       <AuthProvider>
         <CartProvider>
-          <ThemeWrapper>
-            {children}
-          </ThemeWrapper>
+          <SidebarProvider>
+            <ThemeWrapper>
+              {children}
+            </ThemeWrapper>
+          </SidebarProvider>
         </CartProvider>
       </AuthProvider>
     </Provider>
