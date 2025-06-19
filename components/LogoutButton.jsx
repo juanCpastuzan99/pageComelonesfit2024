@@ -1,26 +1,34 @@
 "use client";
-import { signOut } from 'firebase/auth';
-import { auth } from '../app/firebase/firebaseConfig';
+import { useAuth } from '../app/context/AuthContext';
 import { useRouter } from 'next/navigation';
 
-const LogoutButton = () => {
+const LogoutButton = ({ className, onClick, children }) => {
     const router = useRouter();
+    const { logout } = useAuth();
 
     const handleLogout = async () => {
         try {
-            await signOut(auth);
+            await logout();
             router.push('/');
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
         }
     };
 
+    const handleClick = (e) => {
+        if (onClick) {
+            onClick(e);
+        } else {
+            handleLogout();
+        }
+    };
+
     return (
         <button 
-            className="btn btn-danger w-100"
-            onClick={handleLogout}
+            className={className || "btn btn-danger w-100"}
+            onClick={handleClick}
         >
-            Cerrar Sesión
+            {children || "Cerrar Sesión"}
         </button>
     );
 };

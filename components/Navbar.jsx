@@ -7,50 +7,79 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
 import LogoutButton from "./LogoutButton";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname } from 'next/navigation';
+import { useAuth } from '../app/context/AuthContext';
+import CartIcon from './CartIcon';
+import PermissionIndicator from './PermissionIndicator';
 
-const Navbar = () => {
+const Navbar = ({ onShowLogin, setLoginMode }) => {
     const dispatch = useDispatch();
-    const router = useRouter();
     const isDarkMode = useSelector((state) => state.theme.isDarkMode);
-    const [user, setUser] = useState(null);
     const [imageError, setImageError] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+    const pathname = usePathname();
+    const { user, loading, logout } = useAuth();
 
+    // Close sidebar when clicking outside
     useEffect(() => {
-        const privateRoutes = ['/dashboard', '/perfil', '/menu'];
-
-        const handlePopState = () => {
-            if (user && !privateRoutes.includes(window.location.pathname)) {
-                router.replace('/dashboard');
+        const handleClickOutside = (event) => {
+            if (isSidebarOpen && !event.target.closest('.sidebar') && !event.target.closest('.navbar-toggler')) {
+                setIsSidebarOpen(false);
             }
         };
 
-        window.addEventListener('popstate', handlePopState);
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isSidebarOpen]);
 
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setUser(user);
-            setImageError(false);
-            setIsLoading(false);
-
-            if (user && !privateRoutes.includes(window.location.pathname)) {
-                router.push('/dashboard');
-            }
-        }, (error) => {
-            console.error("Auth state change error:", error);
-            setIsLoading(false);
-        });
-
-        if (user && !privateRoutes.includes(window.location.pathname)) {
-            router.push('/dashboard');
+    // Prevent body scroll when sidebar is open
+    useEffect(() => {
+        if (isSidebarOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
         }
-
+        
         return () => {
-            unsubscribe();
-            window.removeEventListener('popstate', handlePopState);
+            document.body.style.overflow = 'unset';
         };
-    }, [user, router]);
+    }, [isSidebarOpen]);
+
+    // Add this after the existing useEffect hooks
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isDropdownOpen && !event.target.closest('.user-dropdown')) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isDropdownOpen]);
+
+    // Verificar si el componente está montado
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // No renderizar hasta que esté montado
+    if (!mounted) return null;
+
+    // No renderizar si está cargando
+    if (loading) {
+        return (
+            <nav className={`w-full ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} shadow-lg fixed top-0 z-50`}>
+                <div className="container mx-auto px-4 py-4">
+                    <div className="flex justify-center">
+                        <div className="animate-spin h-6 w-6 border-2 border-primary-600 border-t-transparent rounded-full"></div>
+                    </div>
+                </div>
+            </nav>
+        );
+    }
 
     const getInitials = (name) => {
         if (!name) return '?';
@@ -66,308 +95,155 @@ const Navbar = () => {
         dispatch(toggleTheme());
     };
 
-    if (isLoading) {
-        return (
-            <nav className={`navbar navbar-expand-lg ${isDarkMode ? 'navbar-dark bg-dark' : 'navbar-light bg-light'}`}>
-                <div className="container">
-                    <div className="spinner-border spinner-border-sm" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            </nav>
-        );
-    }
-
     return (
         <>
-            <nav 
-                className={`navbar navbar-expand-lg ${isDarkMode ? 'navbar-dark bg-dark' : 'navbar-light bg-light'}`}
-                role="navigation"
-                aria-label="Main navigation"
-            >
-                <div className="container">
-                    <Link href="/" className="navbar-brand" aria-label="Home">
-                        Comelonesfit
-                    </Link>
-                    <button
-                        className="navbar-toggler"
-                        type="button"
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        aria-controls="navbarNav"
-                        aria-expanded={isSidebarOpen}
-                        aria-label="Toggle navigation"
-                    >
-                        <span className="navbar-toggler-icon"></span>
-                    </button>
-                    <div className="collapse navbar-collapse" id="navbarNav">
-                        <ul className="navbar-nav me-auto">
-                            {!user && (
-                                <li className="nav-item">
-                                    <Link href="/" className="nav-link" aria-label="Home page">
-                                        Inicio
-                                    </Link>
-                                </li>
-                            )}
-                            {user && (
-                                <li className="nav-item">
-                                    <div className="d-flex align-items-center gap-2">
-                                        <div className="position-relative" style={{ width: '32px', height: '32px' }}>
-                                            {user.photoURL && !imageError ? (
-                                                <Image
-                                                    src={user.photoURL}
-                                                    alt={`${user.displayName}'s profile picture`}
-                                                    width={32}
-                                                    height={32}
-                                                    style={{ borderRadius: '50%', objectFit: 'cover' }}
-                                                    onError={() => setImageError(true)}
-                                                    priority
-                                                />
-                                            ) : (
-                                                <div 
-                                                    className="d-flex align-items-center justify-content-center"
-                                                    style={{
-                                                        width: '32px',
-                                                        height: '32px',
-                                                        borderRadius: '50%',
-                                                        backgroundColor: isDarkMode ? '#6c757d' : '#e9ecef',
-                                                        color: isDarkMode ? '#fff' : '#000',
-                                                        fontSize: '14px',
-                                                        fontWeight: 'bold'
-                                                    }}
-                                                    role="img"
-                                                    aria-label={`${user.displayName}'s initials`}
-                                                >
-                                                    {getInitials(user.displayName)}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <span 
-                                            className="text-truncate" 
-                                            style={{ maxWidth: '150px' }}
-                                            title={user.displayName}
-                                        >
-                                            {user.displayName}
-                                        </span>
-                                        <LogoutButton />
-                                    </div>
-                                </li>
-                            )}
-                        </ul>
-                        <div className="d-flex align-items-center gap-2">
+            <nav className={`w-full ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} shadow-lg fixed top-0 z-50 transition-all duration-300`}>
+                <div className="container mx-auto px-4 lg:px-6">
+                    <div className="flex justify-between items-center h-16">
+                        {/* Logo */}
+                        <Link href="/" className="text-2xl font-bold flex items-center space-x-1 hover:scale-105 transition-transform duration-200 no-underline">
+                            <span className="text-blue-600">Comelones</span>
+                            <span className="text-blue-600">fit</span>
+                        </Link>
+
+                        {/* Right Side Actions */}
+                        <div className="flex items-center space-x-4">
+                            {/* Permission Indicator - Solo para usuarios autenticados */}
+                            {user && <PermissionIndicator />}
+
+                            {/* Cart Icon - Visible for all users */}
+                            <CartIcon />
+
+                            {/* Theme Toggle */}
+                            <button
+                                className={`p-2 rounded-full ${
+                                    isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'
+                                } transition-colors duration-200`}
+                                onClick={handleThemeToggle}
+                                aria-label={`Cambiar a modo ${isDarkMode ? 'claro' : 'oscuro'}`}
+                            >
+                                {isDarkMode ? (
+                                    <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+                                    </svg>
+                                ) : (
+                                    <svg className="h-5 w-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                                    </svg>
+                                )}
+                            </button>
+
+                            {/* Botones para usuarios no autenticados */}
                             {!user && (
                                 <>
-                                    <Link href="/login" className="btn btn-success rounded-pill px-4" aria-label="Login page">
-                                        Comenzar Ahora
-                                    </Link>
-                                    <Link href="/register" className="btn btn-outline-success rounded-pill px-4" aria-label="Register page">
-                                        Registrar Cuenta
-                                    </Link>
+                                    <button
+                                        onClick={() => {
+                                            if (typeof onShowLogin === 'function') {
+                                                onShowLogin(true);
+                                                if (typeof setLoginMode === 'function') setLoginMode('login');
+                                            }
+                                        }}
+                                        className="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors duration-200 shadow-sm"
+                                    >
+                                        Comenzar ahora
+                                    </button>
+                                    <button
+                                        onClick={() => { onShowLogin(true); setLoginMode('register'); }}
+                                        className="px-4 py-2 rounded-lg bg-green-500 text-white font-semibold hover:bg-green-600 transition-colors duration-200 shadow-sm"
+                                    >
+                                        Registrar cuenta
+                                    </button>
                                 </>
                             )}
-                            <button
-                                className={`btn ${isDarkMode ? 'btn-light' : 'btn-dark'}`}
-                                onClick={handleThemeToggle}
-                                aria-label={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}
-                            >
-                                {isDarkMode ? '☀️' : '🌙'}
-                            </button>
+
+                            {/* User Section */}
+                            {user && (
+                                <div className="hidden lg:flex items-center space-x-3">
+                                    <div className="relative user-dropdown">
+                                        <div 
+                                            className="flex items-center space-x-3 cursor-pointer"
+                                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                        >
+                                            <div className="relative">
+                                                {user.photoURL && !imageError ? (
+                                                    <Image
+                                                        src={user.photoURL}
+                                                        alt={`Foto de perfil de ${user.displayName}`}
+                                                        width={40}
+                                                        height={40}
+                                                        className="rounded-full object-cover border-2 border-green-500"
+                                                        onError={() => setImageError(true)}
+                                                        priority
+                                                    />
+                                                ) : (
+                                                    <div 
+                                                        className={`flex items-center justify-center w-10 h-10 rounded-full border-2 border-green-500 ${
+                                                            isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
+                                                        }`}
+                                                    >
+                                                        <span className="text-sm font-medium text-green-600">
+                                                            {getInitials(user.displayName)}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="font-medium text-sm max-w-[120px] truncate" title={user.displayName}>
+                                                    {user.displayName || user.email?.split('@')[0]}
+                                                </span>
+                                            </div>
+                                            <svg 
+                                                className={`h-5 w-5 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} 
+                                                fill="none" 
+                                                viewBox="0 0 24 24" 
+                                                stroke="currentColor"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </div>
+                                        
+                                        {/* Dropdown Menu */}
+                                        {isDropdownOpen && (
+                                            <div className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-1 ${
+                                                isDarkMode ? 'bg-gray-800' : 'bg-white'
+                                            } ring-1 ring-black ring-opacity-5 z-50`}>
+                                                <Link 
+                                                    href="/perfil"
+                                                    className={`block px-4 py-2 text-sm ${
+                                                        isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                    Mi Perfil
+                                                </Link>
+                                                <Link 
+                                                    href="/configuracion"
+                                                    className={`block px-4 py-2 text-sm ${
+                                                        isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                    Configuración
+                                                </Link>
+                                                <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                                                <LogoutButton 
+                                                    className={`block w-full text-left px-4 py-2 text-sm ${
+                                                        isDarkMode ? 'text-red-400 hover:bg-gray-700' : 'text-red-600 hover:bg-gray-100'
+                                                    }`}
+                                                    onClick={() => {
+                                                        logout();
+                                                        setIsDropdownOpen(false);
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
             </nav>
-
-            {/* Mobile Sidebar */}
-            <div 
-                className={`sidebar ${isSidebarOpen ? 'open' : ''} ${isDarkMode ? 'bg-dark' : 'bg-light'}`}
-                style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: isSidebarOpen ? 0 : '-100%',
-                    height: '100vh',
-                    width: '280px',
-                    zIndex: 1000,
-                    transition: 'left 0.3s ease-in-out',
-                    padding: '1.5rem',
-                    boxShadow: '2px 0 5px rgba(0,0,0,0.1)',
-                    overflowY: 'auto'
-                }}
-            >
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h5 className={`mb-0 ${isDarkMode ? 'text-light' : 'text-dark'}`}>Menú Principal</h5>
-                    <button 
-                        className="btn-close" 
-                        onClick={() => setIsSidebarOpen(false)}
-                        aria-label="Close sidebar"
-                    ></button>
-                </div>
-
-                {/* User Profile Section */}
-                {user && (
-                    <div className="mb-4 p-3 border-bottom">
-                        <div className="d-flex align-items-center gap-3">
-                            <div className="position-relative" style={{ width: '48px', height: '48px' }}>
-                                {user.photoURL && !imageError ? (
-                                    <Image
-                                        src={user.photoURL}
-                                        alt={`${user.displayName}'s profile picture`}
-                                        width={48}
-                                        height={48}
-                                        style={{ borderRadius: '50%', objectFit: 'cover' }}
-                                        onError={() => setImageError(true)}
-                                        priority
-                                    />
-                                ) : (
-                                    <div 
-                                        className="d-flex align-items-center justify-content-center"
-                                        style={{
-                                            width: '48px',
-                                            height: '48px',
-                                            borderRadius: '50%',
-                                            backgroundColor: isDarkMode ? '#6c757d' : '#e9ecef',
-                                            color: isDarkMode ? '#fff' : '#000',
-                                            fontSize: '18px',
-                                            fontWeight: 'bold'
-                                        }}
-                                        role="img"
-                                        aria-label={`${user.displayName}'s initials`}
-                                    >
-                                        {getInitials(user.displayName)}
-                                    </div>
-                                )}
-                            </div>
-                            <div>
-                                <h6 className={`mb-1 ${isDarkMode ? 'text-light' : 'text-dark'}`}>{user.displayName}</h6>
-                                <small className={`${isDarkMode ? 'text-light-50' : 'text-dark-50'}`}>{user.email}</small>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                <ul className="nav flex-column">
-                    <li className="nav-item mb-2">
-                        <Link 
-                            href="/" 
-                            className={`nav-link d-flex align-items-center gap-2 ${isDarkMode ? 'text-light' : 'text-dark'}`}
-                            onClick={() => setIsSidebarOpen(false)}
-                        >
-                            <i className="bi bi-house-door"></i>
-                            Inicio
-                        </Link>
-                    </li>
-                    <li className="nav-item mb-2">
-                        <Link 
-                            href="/menu" 
-                            className={`nav-link d-flex align-items-center gap-2 ${isDarkMode ? 'text-light' : 'text-dark'}`}
-                            onClick={() => setIsSidebarOpen(false)}
-                        >
-                            <i className="bi bi-card-list"></i>
-                            Menú Semanal
-                        </Link>
-                    </li>
-                    <li className="nav-item mb-2">
-                        <Link 
-                            href="/recetas" 
-                            className={`nav-link d-flex align-items-center gap-2 ${isDarkMode ? 'text-light' : 'text-dark'}`}
-                            onClick={() => setIsSidebarOpen(false)}
-                        >
-                            <i className="bi bi-book"></i>
-                            Recetas
-                        </Link>
-                    </li>
-                    <li className="nav-item mb-2">
-                        <Link 
-                            href="/calculadora" 
-                            className={`nav-link d-flex align-items-center gap-2 ${isDarkMode ? 'text-light' : 'text-dark'}`}
-                            onClick={() => setIsSidebarOpen(false)}
-                        >
-                            <i className="bi bi-calculator"></i>
-                            Calculadora de Calorías
-                        </Link>
-                    </li>
-                    <li className="nav-item mb-2">
-                        <Link 
-                            href="/blog" 
-                            className={`nav-link d-flex align-items-center gap-2 ${isDarkMode ? 'text-light' : 'text-dark'}`}
-                            onClick={() => setIsSidebarOpen(false)}
-                        >
-                            <i className="bi bi-newspaper"></i>
-                            Blog
-                        </Link>
-                    </li>
-                    <li className="nav-item mb-2">
-                        <Link 
-                            href="/contacto" 
-                            className={`nav-link d-flex align-items-center gap-2 ${isDarkMode ? 'text-light' : 'text-dark'}`}
-                            onClick={() => setIsSidebarOpen(false)}
-                        >
-                            <i className="bi bi-envelope"></i>
-                            Contacto
-                        </Link>
-                    </li>
-
-                    {!user && (
-                        <>
-                            <li className="nav-item mb-2">
-                                <Link 
-                                    href="/login" 
-                                    className={`nav-link d-flex align-items-center gap-2 ${isDarkMode ? 'text-light' : 'text-dark'}`}
-                                    onClick={() => setIsSidebarOpen(false)}
-                                >
-                                    <i className="bi bi-box-arrow-in-right"></i>
-                                    Comenzar Ahora
-                                </Link>
-                            </li>
-                            <li className="nav-item mb-2">
-                                <Link 
-                                    href="/register" 
-                                    className={`nav-link d-flex align-items-center gap-2 ${isDarkMode ? 'text-light' : 'text-dark'}`}
-                                    onClick={() => setIsSidebarOpen(false)}
-                                >
-                                    <i className="bi bi-person-plus"></i>
-                                    Registrar Cuenta
-                                </Link>
-                            </li>
-                        </>
-                    )}
-
-                    <li className="nav-item mt-4">
-                        <button
-                            className={`btn w-100 d-flex align-items-center justify-content-center gap-2 ${isDarkMode ? 'btn-light' : 'btn-dark'}`}
-                            onClick={handleThemeToggle}
-                            aria-label={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}
-                        >
-                            {isDarkMode ? (
-                                <>
-                                    <i className="bi bi-sun"></i>
-                                    Modo Claro
-                                </>
-                            ) : (
-                                <>
-                                    <i className="bi bi-moon"></i>
-                                    Modo Oscuro
-                                </>
-                            )}
-                        </button>
-                    </li>
-                </ul>
-            </div>
-
-            {/* Overlay */}
-            {isSidebarOpen && (
-                <div 
-                    className="overlay"
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        zIndex: 999
-                    }}
-                    onClick={() => setIsSidebarOpen(false)}
-                />
-            )}
         </>
     );
 };

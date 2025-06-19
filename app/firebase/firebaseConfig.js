@@ -1,28 +1,39 @@
-/// firebaseConfig.js
-
+// firebaseConfig.js
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
-export const firebaseConfig = {
+// Configuración de Firebase
+const firebaseConfig = {
   apiKey: "AIzaSyCQfpJ56nzb2PoYz3rRWoVHeH713Adc6gA",
   authDomain: "comelonesfit-3f45a.firebaseapp.com",
   projectId: "comelonesfit-3f45a",
   storageBucket: "comelonesfit-3f45a.appspot.com",
   messagingSenderId: "247007592056",
   appId: "1:247007592056:web:410c62619df8cd5e1bb78d",
-  measurementId: "G-P0742TDT6Z", // Solo si usas Analytics coloca estas claves
+  measurementId: "G-P0742TDT6Z",
 };
 
 // Inicializa Firebase
-let app;
+const app = initializeApp(firebaseConfig);
 let analytics;
-let auth;
 
+// Verifica si estás en el navegador
 if (typeof window !== "undefined") {
-  app = initializeApp(firebaseConfig);
   analytics = getAnalytics(app);
-  auth = getAuth(app);
 }
 
-export { auth, app, analytics };
+// Inicializa Auth y Firestore
+const auth = getAuth(app);
+const db = getFirestore(app);
+export const firestore = db; // Para compatibilidad con código existente
+
+// Inicializar Storage
+export const storage = getStorage(app);
+
+export { app, analytics, auth, db };
+
+// Exportaciones por defecto
+export default app;
