@@ -1,50 +1,46 @@
-const { initializeApp, applicationDefault } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
-
-// Configuración de Firebase (usa variables de entorno o pega aquí tu config si es necesario)
-const firebaseConfig = {
-  projectId: 'comelonesfit-3f45a',
-};
-
-// Inicializar Firebase Admin
-initializeApp({
-  credential: applicationDefault(),
-  ...firebaseConfig,
-});
-
-const db = getFirestore();
+import { collection, getDocs, doc, getDoc, query, where } from "firebase/firestore";
+import { db } from "../app/firebase/firebaseConfig";
 
 async function getDashboardMetrics() {
-  try {
-    // Contar usuarios
-    const usersSnap = await db.collection('users').get();
-    const usersCount = usersSnap.size;
+    try {
+        const usersCollection = collection(db, 'users');
+        const productsCollection = collection(db, 'productos');
+        const ordersCollection = collection(db, 'ordenes');
 
-    // Contar productos
-    const productsSnap = await db.collection('products').get();
-    const productsCount = productsSnap.size;
+        const usersSnapshot = await getDocs(usersCollection);
+        const productsSnapshot = await getDocs(productsCollection);
+        const ordersSnapshot = await getDocs(ordersCollection);
 
-    // Contar órdenes y sumar ventas
-    const ordersSnap = await db.collection('orders').get();
-    const ordersCount = ordersSnap.size;
-    let sales = 0;
-    ordersSnap.forEach(doc => {
-      const data = doc.data();
-      sales += typeof data.total === 'number' ? data.total : 0;
-    });
+        const usersCount = usersSnapshot.size;
+        const productsCount = productsSnapshot.size;
+        const ordersCount = ordersSnapshot.size;
 
-    // Mostrar métricas
-    console.log('--- MÉTRICAS DEL DASHBOARD ---');
-    console.log(`Usuarios:  ${usersCount}`);
-    console.log(`Productos: ${productsCount}`);
-    console.log(`Órdenes:   ${ordersCount}`);
-    console.log(`Ventas:    $${sales.toLocaleString()}`);
-    console.log('-------------------------------');
-    process.exit(0);
-  } catch (error) {
-    console.error('Error obteniendo métricas:', error);
-    process.exit(1);
-  }
+        const sales = ordersSnapshot.docs.reduce((total, order) => {
+            return total + (order.data().total || 0);
+        }, 0);
+
+        return {
+            usersCount,
+            productsCount,
+            ordersCount,
+            sales
+        };
+
+    } catch (error) {
+        console.error("Error al obtener las métricas del dashboard:", error);
+        return {
+            usersCount: 0,
+            productsCount: 0,
+            ordersCount: 0,
+            sales: 0
+        };
+    }
 }
 
-getDashboardMetrics(); 
+async function main() {
+    const metrics = await getDashboardMetrics();
+    // Salida en formato JSON para que pueda ser procesada por otros scripts
+    process.stdout.write(JSON.stringify(metrics));
+}
+
+main(); 

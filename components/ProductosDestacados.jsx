@@ -1,43 +1,66 @@
 // components/ProductosDestacados.jsx - Con debug para verificar funcionamiento
 import React, { useState } from 'react';
-import { useProducts } from '../hooks/useProducts';
+import { useProducts } from '../app/hooks/useProducts';
 import ProductCard from './ProductCard';
-import { CartProvider, useCart } from "./context/CartContext";
+import { CartProvider, useCart } from "../app/context/CartContext";
+import AddProductModal from './AddProductModal';
+import { usePermissions } from '../app/hooks/usePermissions';
+import { useToast } from '../app/hooks/useToast';
+import ProductDetailModal from './ProductDetailModal';
 
 const ProductosDestacados = ({ showLogin = false, onShowLogin }) => {
   const [filtro, setFiltro] = useState('todos');
   const [busqueda, setBusqueda] = useState('');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   
-  console.log('🎯 ProductosDestacados render:', { showLogin, filtro });
-  
-  const { products, loading, error } = useProducts();
+  // Usar opciones para filtrar productos destacados si es necesario
+  const options = filtro === 'destacados' ? { destacados: true, fallback: true } : {};
+  const { products, loading, error, refetch } = useProducts(options);
   const { addToCart } = useCart();
-
-  console.log('📊 Estado del hook:', { 
-    productos: products.length, 
-    loading, 
-    error: error ? 'Sí' : 'No' 
-  });
+  const { isAdmin } = usePermissions();
+  const { showSuccess } = useToast();
 
   // Filtrar productos por búsqueda EN MEMORIA
-  const productsFiltrados = products.filter(product => {
+  const productsFiltrados = (products || []).filter(product => {
     if (!busqueda) return true;
     
-    const nombre = (product.name || '').toLowerCase();
-    const descripcion = (product.description || '').toLowerCase();
+    const nombre = (product.nombre || '').toLowerCase();
+    const descripcion = (product.descripcion || '').toLowerCase();
     const busquedaLower = busqueda.toLowerCase();
     
     return nombre.includes(busquedaLower) || descripcion.includes(busquedaLower);
   });
 
-  console.log('🔍 Productos después de búsqueda:', productsFiltrados.length);
-
   const handleViewDetails = (product) => {
-    console.log('👁️ Ver detalles:', product.name);
+    setSelectedProduct(product);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleProductAdded = (message) => {
+    showSuccess(message);
+    // Refetch products to show the new one
+    if (refetch) {
+      refetch();
+    }
+  };
+
+  const handleOpenAddModal = () => {
+    setIsAddModalOpen(true);
+  };
+
+  const handleCloseAddModal = () => {
+    setIsAddModalOpen(false);
+  };
+
+  const handleAddToCart = (product) => {
+    addToCart(product);
     if (onShowLogin) {
       onShowLogin();
-    } else {
-      console.log('Mostrar detalles de:', product);
+    }
+    if (showSuccess) {
+      showSuccess(`${product.nombre} agregado al carrito.`);
     }
   };
 
@@ -74,16 +97,16 @@ const ProductosDestacados = ({ showLogin = false, onShowLogin }) => {
           </h2>
           
           <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-            {/* Búsqueda */}
+            {/* Campo de búsqueda */}
             <div className="relative">
               <input
                 type="text"
-                placeholder="Buscar productos..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                className="pl-10 pr-4 py-2 rounded-xl border border-green-200 dark:border-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Buscar productos..."
+                className="px-4 py-2 pl-10 rounded-xl border border-green-200 dark:border-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white w-full sm:w-64"
               />
-              <svg className="w-5 h-5 text-green-500 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -100,9 +123,12 @@ const ProductosDestacados = ({ showLogin = false, onShowLogin }) => {
               </select>
             )}
 
-            {/* Botón de nuevo producto - Solo si no es homepage */}
-            {!showLogin && (
-              <button className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl transition-all duration-300 flex items-center gap-2">
+            {/* Botón de nuevo producto - Solo si no es homepage y es admin */}
+            {!showLogin && isAdmin && (
+              <button 
+                onClick={handleOpenAddModal}
+                className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl transition-all duration-300 flex items-center gap-2"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
@@ -115,7 +141,7 @@ const ProductosDestacados = ({ showLogin = false, onShowLogin }) => {
         {/* Debug info - Solo en desarrollo */}
         {process.env.NODE_ENV === 'development' && (
           <div className="mb-4 p-2 bg-gray-100 dark:bg-gray-700 rounded text-xs">
-            Debug: {products.length} productos totales, {productsFiltrados.length} filtrados, 
+            Debug: {products?.length ?? 0} productos totales, {productsFiltrados.length} filtrados, 
             filtro: {filtro}, búsqueda: {busqueda}, loading: {loading ? 'Sí' : 'No'}
           </div>
         )}
@@ -134,12 +160,20 @@ const ProductosDestacados = ({ showLogin = false, onShowLogin }) => {
             </div>
             <p className="text-gray-600 dark:text-gray-400">
               {busqueda 
-                ? <>No hay resultados para tu búsqueda: {busqueda}</>
-                : products.length === 0 
+                ? <>No hay resultados para tu búsqueda: <strong>{busqueda}</strong></>
+                : (products?.length ?? 0) === 0 
                   ? 'No hay productos disponibles. Agrega algunos productos en Firebase.' 
                   : 'No hay productos destacados disponibles'
               }
             </p>
+            {busqueda && (
+              <button 
+                onClick={() => setBusqueda('')}
+                className="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+              >
+                Limpiar búsqueda
+              </button>
+            )}
           </div>
         ) : (
           <>
@@ -150,19 +184,33 @@ const ProductosDestacados = ({ showLogin = false, onShowLogin }) => {
                   product={product}
                   showDetails={true}
                   onViewDetails={handleViewDetails}
-                  onAddToCart={addToCart}
+                  onAddToCart={() => handleAddToCart(product)}
+                  showAdminOptions={!showLogin && isAdmin}
                 />
               ))}
             </div>
             
             {productsFiltrados.length > 0 && (
               <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-                Mostrando {productsFiltrados.length} de {products.length} productos
+                Mostrando {productsFiltrados.length} de {products?.length ?? 0} productos
+                {busqueda && ` para "${busqueda}"`}
               </div>
             )}
           </>
         )}
       </div>
+
+      {/* Modal para agregar producto */}
+      <AddProductModal
+        isOpen={isAddModalOpen}
+        onClose={handleCloseAddModal}
+        onProductAdded={handleProductAdded}
+      />
+      <ProductDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        product={selectedProduct}
+      />
     </CartProvider>
   );
 };

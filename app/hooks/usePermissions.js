@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { permissionService } from '../services/permissionService';
 
 export const usePermissions = () => {
-  const { user } = useAuth();
-  const [permissions, setPermissions] = useState({
+  const { user, loading: authLoading } = useAuth();
+  
+  const guestPermissions = {
     canManageProducts: false,
     canAccessAdminDashboard: false,
     canCreateProducts: false,
@@ -12,115 +13,86 @@ export const usePermissions = () => {
     canDeleteProducts: false,
     canViewProducts: true,
     canAddToCart: true,
-    role: 'guest'
-  });
+    role: 'guest',
+  };
+
+  const [permissions, setPermissions] = useState(guestPermissions);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const [userRole, setUserRole] = useState('guest');
   const [loading, setLoading] = useState(true);
 
-  // Cargar permisos de forma asíncrona
+  const loadPermissions = useCallback(async () => {
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
+
+    if (!user) {
+      setPermissions(guestPermissions);
+      setIsAdmin(false);
+      setIsOwner(false);
+      setUserRole('guest');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const userPermissions = await permissionService.getUserPermissions(user);
+      
+      setPermissions(userPermissions);
+      const adminStatus = userPermissions.role === 'admin' || userPermissions.role === 'owner';
+      const ownerStatus = userPermissions.role === 'owner';
+      setIsAdmin(adminStatus);
+      setIsOwner(ownerStatus);
+      setUserRole(userPermissions.role);
+
+    } catch (error) {
+      console.error('Error al cargar permisos:', error);
+      setPermissions(guestPermissions);
+      setIsAdmin(false);
+      setIsOwner(false);
+      setUserRole('guest');
+    } finally {
+      setLoading(false);
+    }
+  }, [user, authLoading]);
+
   useEffect(() => {
-    const loadPermissions = async () => {
-      if (!user) {
-        setPermissions(permissionService.getUserPermissionsSync(null));
-        setIsAdmin(false);
-        setUserRole('guest');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        
-        // Obtener permisos asíncronos
-        const asyncPermissions = await permissionService.getUserPermissions(user);
-        const asyncIsAdmin = await permissionService.isAdmin(user);
-        const asyncUserRole = await permissionService.getUserRole(user);
-        
-        setPermissions(asyncPermissions);
-        setIsAdmin(asyncIsAdmin);
-        setUserRole(asyncUserRole);
-      } catch (error) {
-        console.error('Error al cargar permisos:', error);
-        
-        // Fallback a permisos síncronos
-        const syncPermissions = permissionService.getUserPermissionsSync(user);
-        const syncIsAdmin = permissionService.isAdminSync(user);
-        
-        setPermissions(syncPermissions);
-        setIsAdmin(syncIsAdmin);
-        setUserRole(syncIsAdmin ? 'admin' : 'visitor');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadPermissions();
-  }, [user]);
+  }, [loadPermissions]);
 
   return {
-    // Permisos específicos
-    canManageProducts: permissions.canManageProducts,
-    canAccessAdminDashboard: permissions.canAccessAdminDashboard,
-    canCreateProducts: permissions.canCreateProducts,
-    canEditProducts: permissions.canEditProducts,
-    canDeleteProducts: permissions.canDeleteProducts,
-    canViewProducts: permissions.canViewProducts,
-    canAddToCart: permissions.canAddToCart,
-
-    // Información del usuario
+    ...permissions,
     isAdmin,
+    isOwner,
     userRole,
     user,
     loading,
-
-    // Funciones de verificación
-    hasPermission: (permission) => {
-      return permissions[permission] || false;
-    },
-
-    // Verificar si el usuario puede realizar una acción específica
+    reloadPermissions: loadPermissions,
     can: (action) => {
-      switch (action) {
-        case 'manage_products':
-          return permissions.canManageProducts;
-        case 'access_admin':
-          return permissions.canAccessAdminDashboard;
-        case 'create_products':
-          return permissions.canCreateProducts;
-        case 'edit_products':
-          return permissions.canEditProducts;
-        case 'delete_products':
-          return permissions.canDeleteProducts;
-        case 'view_products':
-          return permissions.canViewProducts;
-        case 'add_to_cart':
-          return permissions.canAddToCart;
-        default:
-          return false;
-      }
-    },
+        // El propietario siempre tiene permiso para todo.
+        if (userRole === 'owner') return true;
 
-    // Función para verificar si es propietario
-    isOwner: () => {
-      return permissionService.isOwner(user);
+        switch (action) {
+            case 'manage_products':
+                return permissions.canManageProducts;
+            case 'access_admin':
+                return permissions.canAccessAdminDashboard;
+            case 'create_products':
+                return permissions.canCreateProducts;
+            case 'edit_products':
+                return permissions.canEditProducts;
+            case 'delete_products':
+                return permissions.canDeleteProducts;
+            case 'view_products':
+                return permissions.canViewProducts;
+            case 'add_to_cart':
+                return permissions.canAddToCart;
+            default:
+                return false;
+        }
     },
-
-    // Función para recargar permisos
-    reloadPermissions: async () => {
-      if (!user) return;
-      
-      try {
-        const asyncPermissions = await permissionService.getUserPermissions(user);
-        const asyncIsAdmin = await permissionService.isAdmin(user);
-        const asyncUserRole = await permissionService.getUserRole(user);
-        
-        setPermissions(asyncPermissions);
-        setIsAdmin(asyncIsAdmin);
-        setUserRole(asyncUserRole);
-      } catch (error) {
-        console.error('Error al recargar permisos:', error);
-      }
-    }
   };
 }; 

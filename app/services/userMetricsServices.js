@@ -69,9 +69,9 @@ export class UserMetricsService {
         metrics.push({
           id: doc.id,
           ...data,
-          // Convertir timestamp a fecha legible si existe
-          createdAt: data.createdAt?.toDate?.() || data.createdAt,
-          updatedAt: data.updatedAt?.toDate?.() || data.updatedAt
+          // Convertir timestamp a string ISO para serialización
+          createdAt: data.createdAt?.toDate?.().toISOString() || data.createdAt,
+          updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt
         });
       });
 
@@ -98,7 +98,8 @@ export class UserMetricsService {
       const q = query(
         collection(db, this.COLLECTION_NAME),
         where('userId', '==', userId),
-        where('date', '>=', weekAgoString)
+        where('date', '>=', weekAgoString),
+        orderBy('date', 'desc')
       );
 
       const querySnapshot = await getDocs(q);
@@ -109,13 +110,13 @@ export class UserMetricsService {
         metrics.push({
           id: doc.id,
           ...data,
-          createdAt: data.createdAt?.toDate?.() || data.createdAt,
-          updatedAt: data.updatedAt?.toDate?.() || data.updatedAt
+          createdAt: data.createdAt?.toDate?.().toISOString() || data.createdAt,
+          updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt
         });
       });
 
       // Ordenar manualmente por fecha
-      return metrics.sort((a, b) => new Date(b.date) - new Date(a.date));
+      return metrics;
     } catch (error) {
       console.error('Error obteniendo métricas semanales:', error);
       // Fallback: obtener todas las métricas y filtrar localmente

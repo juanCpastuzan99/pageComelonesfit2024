@@ -1,5 +1,5 @@
 // components/ProductCard.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useCart } from '../app/context/CartContext';
 import { usePermissions } from '../app/hooks/usePermissions';
 import { productService } from '../app/services/productService';
@@ -7,12 +7,80 @@ import EditProductModal from './EditProductModal';
 import { formatCurrency } from '../utils/priceFormatter';
 import Image from 'next/image';
 
+const AdminMenu = ({ product, onEdit, onDelete, isDeleting }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuRef]);
+
+  return (
+  <div className="absolute top-2 right-2">
+      <div className="relative" ref={menuRef}>
+        <button onClick={() => setIsOpen(!isOpen)} className="p-2 bg-gray-800 bg-opacity-50 text-white rounded-full hover:bg-opacity-75 transition-colors">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+        </svg>
+      </button>
+        {isOpen && (
+          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl py-1 z-10">
+            <button onClick={() => { onEdit(); setIsOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+          Editar (E)
+        </button>
+            <button onClick={() => { onDelete(); setIsOpen(false); }} disabled={isDeleting} className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 flex items-center gap-2 disabled:opacity-50">
+          {isDeleting ? (
+            <>
+              <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              Eliminando...
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              Eliminar (Supr)
+            </>
+          )}
+        </button>
+      </div>
+        )}
+      </div>
+  </div>
+)
+};
+
 const ProductCard = ({ product, showDetails = false, onViewDetails, onAddToCartSuccess, showAdminOptions = false, onProductDeleted, onProductUpdated }) => {
-  const { addToCart, isInCart, getItemQuantity } = useCart();
+  const { addToCart, items, loading } = useCart();
   const { isAdmin, canEditProducts, canDeleteProducts } = usePermissions();
-  const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!isFocused || !isAdmin) return;
+
+      if (e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        handleEditProduct();
+      }
+      if (e.key === 'Delete') {
+        e.preventDefault();
+        handleDeleteProduct();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFocused, isAdmin]);
 
   const getStockStatus = (stock) => {
     if (stock > 10) return { text: 'En Stock', class: 'bg-green-500' };
@@ -23,27 +91,18 @@ const ProductCard = ({ product, showDetails = false, onViewDetails, onAddToCartS
   const stockStatus = getStockStatus(product.stock || 0);
 
   const handleImageError = (e) => {
-    e.target.src = "https://via.placeholder.com/500x300?text=Sin+Imagen";
+    e.target.src = "https://placehold.co/500x300?text=Sin+Imagen";
   };
 
   const handleAddToCart = async () => {
     if (product.stock <= 0) return;
-    
-    setIsAdding(true);
     try {
-      addToCart(product);
-      
-      // Mostrar notificación de éxito
+      await addToCart(product);
       if (onAddToCartSuccess) {
-        onAddToCartSuccess(`${product.nombre || product.name} agregado al carrito`);
+        onAddToCartSuccess(`${product.nombre} agregado al carrito`);
       }
-      
-      // Simular un pequeño delay para mostrar feedback visual
-      await new Promise(resolve => setTimeout(resolve, 300));
     } catch (error) {
       console.error('Error al agregar al carrito:', error);
-    } finally {
-      setIsAdding(false);
     }
   };
 
@@ -62,17 +121,14 @@ const ProductCard = ({ product, showDetails = false, onViewDetails, onAddToCartS
   };
 
   const handleDeleteProduct = async () => {
-    if (!window.confirm(`¿Estás seguro de que quieres eliminar "${product.nombre || product.name}"? Esta acción no se puede deshacer.`)) {
+    if (!window.confirm(`¿Estás seguro de que quieres eliminar "${product.nombre}"? Esta acción no se puede deshacer.`)) {
       return;
     }
 
     setIsDeleting(true);
     try {
-      await productService.deleteProduct(product.id);
-      
-      // Notificar al componente padre que el producto fue eliminado
       if (onProductDeleted) {
-        onProductDeleted(product.id, `${product.nombre || product.name} eliminado exitosamente`);
+        await onProductDeleted(product.id);
       }
     } catch (error) {
       console.error('Error al eliminar el producto:', error);
@@ -82,100 +138,61 @@ const ProductCard = ({ product, showDetails = false, onViewDetails, onAddToCartS
     }
   };
 
-  const cartQuantity = getItemQuantity(product.id);
-  const isInCartItem = isInCart(product.id);
+  const isInCart = items.some(item => item.id === product.id);
+  const cartItem = items.find(item => item.id === product.id);
+  const cartQuantity = cartItem ? cartItem.quantity : 0;
 
   return (
     <>
-      <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group transform hover:-translate-y-1">
+      <div 
+        className={`bg-white dark:bg-gray-700 rounded-2xl shadow-lg overflow-hidden transition-all duration-300 group transform hover:-translate-y-1 relative
+          ${product.destacado ? 'border-2 border-yellow-400' : 'border-2 border-transparent'}
+          ${isFocused ? 'ring-2 ring-green-500 ring-offset-2' : ''}`}
+        onFocus={() => showAdminOptions && setIsFocused(true)}
+        onBlur={() => showAdminOptions && setIsFocused(false)}
+        tabIndex={showAdminOptions ? 0 : -1}
+      >
         <div className="relative h-48 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900">
           <Image
-            src={product.imagen || product.image || product.imageUrl || "https://via.placeholder.com/500x300?text=Sin+Imagen"}
-            alt={product.name}
+            src={product.imagen || "https://placehold.co/500x300?text=Sin+Imagen"}
+            alt={product.nombre}
             width={500}
             height={192}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={handleImageError}
           />
           
           {/* Badge de stock */}
-          <div className="absolute top-2 right-2">
-            <span className={`px-3 py-1 text-white text-sm rounded-full ${stockStatus.class}`}>
+          <div className="absolute top-2 left-2 flex flex-col gap-2">
+            <span className={`px-3 py-1 text-white text-xs rounded-full ${stockStatus.class}`}>
               {stockStatus.text}
             </span>
-          </div>
-          
-          {/* Badge de destacado */}
-          {product.destacado && (
-            <div className="absolute top-2 left-2">
-              <span className="px-3 py-1 bg-yellow-500 text-white text-sm rounded-full flex items-center">
+            {product.destacado && (
+              <span className="px-3 py-1 bg-yellow-400 text-black text-xs rounded-full flex items-center animate-pulse">
                 ⭐ Destacado
               </span>
-            </div>
-          )}
-
+            )}
+          </div>
+          
           {/* Badge de cantidad en carrito */}
-          {isInCartItem && cartQuantity > 0 && (
-            <div className="absolute bottom-2 left-2">
-              <span className="px-3 py-1 bg-green-500 text-white text-sm rounded-full flex items-center">
-                🛒 {cartQuantity}
-              </span>
+          {isInCart && cartQuantity > 0 && (
+            <div className="absolute bottom-2 right-2 px-3 py-1 bg-green-500 text-white text-sm rounded-full flex items-center shadow-lg">
+              🛒 <span className="ml-2 font-bold">{cartQuantity}</span>
             </div>
           )}
 
           {/* Opciones de administración - Solo para administradores */}
           {isAdmin && showAdminOptions && (
-            <div className="absolute top-2 left-2 right-2 flex justify-between">
-              <div className="flex gap-1">
-                {canEditProducts && (
-                  <button
-                    onClick={handleEditProduct}
-                    className="p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
-                    title="Editar producto"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                )}
-                {canDeleteProducts && (
-                  <button
-                    onClick={handleDeleteProduct}
-                    disabled={isDeleting}
-                    className={`p-1 text-white rounded-full transition-colors ${
-                      isDeleting 
-                        ? 'bg-gray-500 cursor-not-allowed' 
-                        : 'bg-red-500 hover:bg-red-600'
-                    }`}
-                    title={isDeleting ? "Eliminando..." : "Eliminar producto"}
-                  >
-                    {isDeleting ? (
-                      <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    )}
-                  </button>
-                )}
-              </div>
-              <div className="flex items-center">
-                <span className="px-2 py-1 bg-green-500 text-white text-xs rounded-full">
-                  Admin
-                </span>
-              </div>
-            </div>
+            <AdminMenu product={product} onEdit={handleEditProduct} onDelete={handleDeleteProduct} isDeleting={isDeleting} />
           )}
         </div>
         
         <div className="p-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-            {product.nombre || product.name}
+            {product.nombre}
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-            {product.descripcion || product.description}
+            {product.descripcion}
           </p>
           
           <div className="flex justify-between items-center">
@@ -183,9 +200,9 @@ const ProductCard = ({ product, showDetails = false, onViewDetails, onAddToCartS
               <span className="text-xl font-bold text-green-600 dark:text-green-400">
                 {formatCurrency(product.precio)}
               </span>
-              {product.originalPrice && product.originalPrice > (product.precio ?? 0) && (
+              {product.precio_original && product.precio_original > (product.precio ?? 0) && (
                 <span className="text-sm text-gray-500 line-through">
-                  {formatCurrency(product.originalPrice)}
+                  {formatCurrency(product.precio_original)}
                 </span>
               )}
             </div>
@@ -206,32 +223,34 @@ const ProductCard = ({ product, showDetails = false, onViewDetails, onAddToCartS
               )}
               
               {/* Botón de agregar al carrito */}
-              <button 
-                onClick={handleAddToCart}
-                disabled={product.stock <= 0 || isAdding}
-                className={`p-2 rounded-lg transition-all duration-300 ${
-                  product.stock > 0 && !isAdding
-                    ? isInCartItem
-                      ? 'bg-green-500 text-white hover:bg-green-600'
-                      : 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-800'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                } ${isAdding ? 'animate-pulse' : ''}`}
-                title={product.stock > 0 ? (isInCartItem ? "Agregado al carrito" : "Agregar al carrito") : "Producto agotado"}
-              >
-                {isAdding ? (
-                  <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                ) : isInCartItem ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                )}
-              </button>
+              {!isAdmin && (
+                <button 
+                  onClick={handleAddToCart}
+                  disabled={product.stock <= 0 || loading === 'loading'}
+                  className={`p-2 rounded-lg transition-all duration-300 ${
+                    product.stock > 0
+                      ? isInCart
+                        ? 'bg-green-500 text-white hover:bg-green-600'
+                        : 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-800'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                  } ${loading === 'loading' ? 'animate-pulse' : ''}`}
+                  title={product.stock > 0 ? (isInCart ? "Agregado al carrito" : "Agregar al carrito") : "Producto agotado"}
+                >
+                  {loading === 'loading' ? (
+                    <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  ) : isInCart ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  )}
+                </button>
+              )}
             </div>
           </div>
 
@@ -246,7 +265,7 @@ const ProductCard = ({ product, showDetails = false, onViewDetails, onAddToCartS
                   <span className="font-medium">ID:</span> {product.id}
                 </div>
                 <div>
-                  <span className="font-medium">Categoría:</span> {product.categoria || product.category || 'Sin categoría'}
+                  <span className="font-medium">Categoría:</span> {product.categoria || 'Sin categoría'}
                 </div>
                 <div>
                   <span className="font-medium">Creado:</span> {product.createdAt ? new Date(product.createdAt).toLocaleDateString() : 'N/A'}

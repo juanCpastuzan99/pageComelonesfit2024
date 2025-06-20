@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal, { ModalHeader, ModalBody, ModalFooter } from './Modal';
 import { productService } from '../app/services/productService';
+import { usePermissions } from '../app/hooks/usePermissions';
 
 const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
+  const { canCreateProducts, loading: permissionsLoading } = usePermissions();
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -15,6 +17,15 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    if (isOpen) {
+      setError(''); // Limpiar errores al abrir
+      if (!permissionsLoading && !canCreateProducts) {
+        setError('Missing or insufficient permissions.');
+      }
+    }
+  }, [isOpen, permissionsLoading, canCreateProducts]);
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -25,6 +36,12 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!canCreateProducts) {
+      setError('Missing or insufficient permissions.');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -229,7 +246,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
           </button>
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !canCreateProducts}
             className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {loading ? (

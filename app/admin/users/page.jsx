@@ -7,30 +7,15 @@ import { userService } from '../../services/userService';
 import { collection, getDocs, query, where, doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../../app/firebase/firebaseConfig';
 import { appConfig, configUtils } from '../../config/appConfig';
+import { useToast } from '../../hooks/useToast';
 
 // Componente para mostrar estadísticas
-const StatsCard = ({ title, value, icon, color = "blue" }) => {
-  const colorClasses = {
-    blue: "bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 text-blue-600",
-    red: "bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800 text-red-600",
-    green: "bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800 text-green-600",
-    yellow: "bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-800 text-yellow-600"
-  };
-
-  return (
-    <div className={`p-6 rounded-lg border ${colorClasses[color]}`}>
-      <div className="flex items-center">
-        <div className="flex-1">
-          <p className="text-sm font-medium opacity-75">{title}</p>
-          <p className="text-2xl font-bold">{value}</p>
-        </div>
-        <div className="text-3xl opacity-50">
-          {icon}
-        </div>
-      </div>
-    </div>
-  );
-};
+const StatCard = ({ title, value }) => (
+  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</h3>
+    <p className="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{value}</p>
+  </div>
+);
 
 // Componente para la tarjeta de usuario
 const UserCard = ({ user, onRoleChange, onDeleteUser, onEditUser, currentUser }) => {
@@ -39,21 +24,25 @@ const UserCard = ({ user, onRoleChange, onDeleteUser, onEditUser, currentUser })
   const [showDetails, setShowDetails] = useState(false);
 
   const handleRoleChange = async (newRole) => {
+    if (!window.confirm(`¿Estás seguro de que quieres cambiar el rol de "${user.email}" a "${newRole}"?`)) {
+      return;
+    }
     setIsChangingRole(true);
     try {
       await onRoleChange(user.id, newRole);
     } catch (error) {
       console.error('Error al cambiar rol:', error);
-      alert('Error al cambiar el rol');
     } finally {
       setIsChangingRole(false);
     }
   };
 
   const handleDelete = async () => {
+    if (!window.confirm(`¿Estás seguro de que quieres eliminar al usuario "${user.email}"? Esta acción no se puede deshacer.`)) {
+      return;
+    }
     try {
       await onDeleteUser(user.id);
-      setShowDeleteConfirm(false);
     } catch (error) {
       console.error('Error al eliminar usuario:', error);
       alert('Error al eliminar usuario');
@@ -63,26 +52,30 @@ const UserCard = ({ user, onRoleChange, onDeleteUser, onEditUser, currentUser })
   const isCurrentUser = currentUser?.uid === user.id;
   const isOwner = configUtils.isOwner(user.email);
 
+  // Forzar rol de visualización a 'owner' si es el propietario, para consistencia visual.
+  const displayRole = isOwner ? 'owner' : user.role;
+
+  const roleInfoMap = {
+    owner: { name: 'Propietario', color: 'text-purple-600', icon: '👑', avatarColor: 'bg-purple-500' },
+    admin: { name: 'Administrador', color: 'text-red-600', icon: '👑', avatarColor: 'bg-red-500' },
+    visitor: { name: 'Visitante', color: 'text-blue-600', icon: '👤', avatarColor: 'bg-blue-500' },
+  };
+
+  const currentRoleInfo = roleInfoMap[displayRole] || roleInfoMap.visitor;
+
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-      <div className="flex items-start justify-between">
+    <div className={`bg-white dark:bg-gray-800 p-4 rounded-lg border ${isOwner ? 'border-purple-300 dark:border-purple-700' : 'border-gray-200 dark:border-gray-700'}`}>
+      <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4 flex-1">
-          {/* Avatar */}
           <div className="relative">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${
-              user.role === 'admin' ? 'bg-red-500' : 'bg-blue-500'
-            }`}>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${currentRoleInfo.avatarColor}`}>
               {user.email ? user.email[0].toUpperCase() : '?'}
             </div>
-            {/* Badge de rol */}
-            <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center text-xs ${
-              user.role === 'admin' ? 'bg-red-500' : 'bg-blue-500'
-            }`}>
-              {user.role === 'admin' ? '👑' : '👤'}
+            <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center text-xs ${currentRoleInfo.avatarColor}`}>
+              {currentRoleInfo.icon}
             </div>
           </div>
 
-          {/* Info del usuario */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
@@ -103,10 +96,8 @@ const UserCard = ({ user, onRoleChange, onDeleteUser, onEditUser, currentUser })
             <div className="mt-1 space-y-1">
               <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                 <span>Rol: 
-                  <span className={`ml-1 font-medium ${
-                    user.role === 'admin' ? 'text-red-600' : 'text-blue-600'
-                  }`}>
-                    {user.role === 'admin' ? 'Administrador' : 'Visitante'}
+                  <span className={`ml-1 font-medium ${currentRoleInfo.color}`}>
+                    {currentRoleInfo.name}
                   </span>
                 </span>
                 {user.nombre && user.apellido && (
@@ -116,7 +107,7 @@ const UserCard = ({ user, onRoleChange, onDeleteUser, onEditUser, currentUser })
               
               {user.createdAt && (
                 <p className="text-xs text-gray-400 dark:text-gray-500">
-                  Registrado: {new Date(user.createdAt.toDate()).toLocaleDateString()}
+                  Registrado: {new Date(user.createdAt?.toDate ? user.createdAt.toDate() : user.createdAt).toLocaleDateString()}
                 </p>
               )}
               
@@ -126,106 +117,46 @@ const UserCard = ({ user, onRoleChange, onDeleteUser, onEditUser, currentUser })
                 </p>
               )}
             </div>
-
-            {/* Detalles expandibles */}
-            {showDetails && (
-              <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  {user.telefono && (
-                    <div>
-                      <span className="font-medium text-gray-700 dark:text-gray-300">Teléfono:</span>
-                      <span className="ml-2 text-gray-600 dark:text-gray-400">{user.telefono}</span>
-                    </div>
-                  )}
-                  {user.whatsapp && (
-                    <div>
-                      <span className="font-medium text-gray-700 dark:text-gray-300">WhatsApp:</span>
-                      <span className="ml-2 text-gray-600 dark:text-gray-400">{user.whatsapp}</span>
-                    </div>
-                  )}
-                  {user.direccion && (
-                    <div className="md:col-span-2">
-                      <span className="font-medium text-gray-700 dark:text-gray-300">Dirección:</span>
-                      <span className="ml-2 text-gray-600 dark:text-gray-400">{user.direccion}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Acciones */}
         <div className="flex items-center space-x-2">
-          {/* Botón de detalles */}
-          <button
-            onClick={() => setShowDetails(!showDetails)}
-            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors duration-200"
-            title="Ver detalles"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-          </button>
-
-          {/* Botón de editar */}
-          <button
-            onClick={() => onEditUser(user)}
-            className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors duration-200"
-            title="Editar usuario"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-          </button>
-
-          {/* No permitir cambios al propietario */}
-          {!isOwner && (
+          {!isOwner && !isCurrentUser && (
             <>
-              {/* Cambiar rol */}
-              <select
-                value={user.role}
-                onChange={(e) => handleRoleChange(e.target.value)}
-                disabled={isChangingRole || isCurrentUser}
-                className="text-sm border border-gray-300 rounded-md px-3 py-1 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50"
+              <div className="flex items-center space-x-2">
+                <label htmlFor={`role-select-${user.id}`} className="text-sm font-medium text-gray-600 dark:text-gray-400">Rol:</label>
+                <select
+                  id={`role-select-${user.id}`}
+                  value={user.role}
+                  onChange={(e) => handleRoleChange(e.target.value)}
+                  disabled={isChangingRole}
+                  className="text-sm border border-gray-300 rounded-md px-3 py-1 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50 focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="visitor">Visitante</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div className="w-px h-6 bg-gray-200 dark:bg-gray-600"></div>
+              <button
+                onClick={handleDelete}
+                className="p-2 text-red-600 hover:text-red-800 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-md transition-colors duration-200"
+                title="Eliminar usuario"
               >
-                <option value="visitor">Visitante</option>
-                <option value="admin">Admin</option>
-              </select>
-
-              {/* Eliminar usuario */}
-              {!isCurrentUser && (
-                <div className="relative">
-                  {!showDeleteConfirm ? (
-                    <button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors duration-200"
-                      title="Eliminar usuario"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  ) : (
-                    <div className="flex items-center space-x-1">
-                      <button
-                        onClick={handleDelete}
-                        className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                      >
-                        Confirmar
-                      </button>
-                      <button
-                        onClick={() => setShowDeleteConfirm(false)}
-                        className="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded hover:bg-gray-400"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
             </>
+          )}
+          {isOwner && (
+            <div className="text-sm font-semibold text-purple-600 dark:text-purple-400">
+              (Propietario)
+            </div>
+          )}
+          {isCurrentUser && !isOwner && (
+            <div className="text-sm font-semibold text-green-600 dark:text-green-400">
+              (Tú)
+            </div>
           )}
         </div>
       </div>
@@ -398,7 +329,8 @@ const EditUserModal = ({ user, isOpen, onClose, onSave, currentUser }) => {
 export default function AdminPage() {
   // Hooks SIEMPRE al inicio
   const { user } = useAuth();
-  const { isAdmin, loading: permissionsLoading } = usePermissions();
+  const { isOwner, loading: permissionsLoading } = usePermissions();
+  const { showToast } = useToast();
   const [users, setUsers] = useState([]);
   const [selected, setSelected] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -411,27 +343,40 @@ export default function AdminPage() {
     visitorUsers: 0,
     recentUsers: 0
   });
+  const [ownerRoleIsCorrect, setOwnerRoleIsCorrect] = useState(true);
 
   useEffect(() => {
     const unsubscribe = userService.onUsersChange((usersData) => {
       setUsers(usersData);
-      // Calcular estadísticas
+
+      const ownerUser = usersData.find(u => configUtils.isOwner(u.email));
+      if (ownerUser && ownerUser.role !== 'owner') {
+        setOwnerRoleIsCorrect(false);
+      } else {
+        setOwnerRoleIsCorrect(true);
+      }
+
       const totalUsers = usersData.length;
-      const adminUsers = usersData.filter(u => u.role === 'admin').length;
-      const visitorUsers = usersData.filter(u => u.role === 'visitor').length;
-      // Usuarios registrados en los últimos 7 días
+      
+      // Corregido: Contar al propietario como administrador para las estadísticas.
+      const adminUsersCount = usersData.filter(u => u.role === 'admin' || configUtils.isOwner(u.email)).length;
+      
+      // Corregido: Asegurarse de no contar al propietario como visitante.
+      const visitorUsersCount = usersData.filter(u => u.role === 'visitor' && !configUtils.isOwner(u.email)).length;
+
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
-      const recentUsers = usersData.filter(u => 
-        u.createdAt && u.createdAt.toDate() > weekAgo
-      ).length;
-      setStats({ totalUsers, adminUsers, visitorUsers, recentUsers });
+      const recentUsers = usersData.filter(u => {
+        if (!u.createdAt) return false;
+        const createdAtDate = u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt);
+        return createdAtDate > weekAgo;
+      }).length;
+      setStats({ totalUsers, adminUsers: adminUsersCount, visitorUsers: visitorUsersCount, recentUsers });
       setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
-  // Verificar permisos
   if (permissionsLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -443,13 +388,13 @@ export default function AdminPage() {
     );
   }
 
-  if (!isAdmin) {
+  if (!isOwner) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">Acceso Denegado</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Solo los administradores pueden acceder a esta página.
+            Solo el propietario del sistema puede acceder a esta página.
           </p>
         </div>
       </div>
@@ -461,8 +406,10 @@ export default function AdminPage() {
     try {
       await userService.changeUserRole(userId, newRole);
       console.log(`Rol de usuario ${userId} cambiado a ${newRole}`);
+      showToast('success', `Rol de usuario cambiado a ${newRole}`);
     } catch (error) {
       console.error('Error al cambiar rol:', error);
+      showToast('error', 'Error al cambiar el rol del usuario');
       throw error;
     }
   };
@@ -472,8 +419,10 @@ export default function AdminPage() {
     try {
       await userService.deleteUser(userId);
       console.log(`Usuario ${userId} eliminado`);
+      showToast('success', 'Usuario eliminado correctamente');
     } catch (error) {
       console.error('Error al eliminar usuario:', error);
+      showToast('error', 'Error al eliminar el usuario');
       throw error;
     }
   };
@@ -487,8 +436,10 @@ export default function AdminPage() {
     try {
       await userService.updateUser(updated.id, updated);
       setModalOpen(false);
+      showToast('success', 'Usuario actualizado correctamente');
     } catch (error) {
       console.error('Error al actualizar usuario:', error);
+      showToast('error', 'Error al actualizar el usuario');
       throw error;
     }
   };
@@ -499,7 +450,16 @@ export default function AdminPage() {
                          user.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.apellido?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    const displayRole = configUtils.isOwner(user.email) ? 'owner' : user.role;
+    let matchesRole;
+    if (roleFilter === 'all') {
+      matchesRole = true;
+    } else if (roleFilter === 'admin') {
+      // Corregido: Incluir al propietario cuando se filtra por "Administradores".
+      matchesRole = (displayRole === 'admin' || displayRole === 'owner');
+    } else {
+      matchesRole = (displayRole === roleFilter);
+    }
     
     return matchesSearch && matchesRole;
   });
@@ -558,30 +518,22 @@ export default function AdminPage() {
       </div>
 
       {/* Estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatsCard
-          title="Total Usuarios"
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <StatCard
+          title="Usuarios Totales"
           value={stats.totalUsers}
-          icon="👥"
-          color="blue"
         />
-        <StatsCard
+        <StatCard
           title="Administradores"
           value={stats.adminUsers}
-          icon="👑"
-          color="red"
         />
-        <StatsCard
+        <StatCard
           title="Visitantes"
           value={stats.visitorUsers}
-          icon="👤"
-          color="green"
         />
-        <StatsCard
+        <StatCard
           title="Nuevos (7 días)"
           value={stats.recentUsers}
-          icon="🆕"
-          color="yellow"
         />
       </div>
 
@@ -625,6 +577,7 @@ export default function AdminPage() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 >
                   <option value="all">Todos los roles</option>
+                  <option value="owner">Propietario</option>
                   <option value="admin">Administradores</option>
                   <option value="visitor">Visitantes</option>
                 </select>
@@ -708,10 +661,9 @@ export default function AdminPage() {
             </h3>
             <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
               <ul className="list-disc list-inside space-y-1">
-                <li><strong>Administradores:</strong> Pueden crear, editar y eliminar productos</li>
-                <li><strong>Visitantes:</strong> Solo pueden ver y explorar productos</li>
-                <li><strong>Propietario:</strong> Tu cuenta no puede ser modificada por seguridad</li>
-                <li><strong>Cambios:</strong> Los cambios de rol se aplican inmediatamente</li>
+                <li><strong>Propietario:</strong> Acceso total al sistema. No puede ser modificado.</li>
+                <li><strong>Administradores:</strong> Pueden gestionar productos y usuarios.</li>
+                <li><strong>Visitantes:</strong> Solo pueden ver y explorar productos.</li>
               </ul>
             </div>
           </div>

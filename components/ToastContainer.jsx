@@ -1,7 +1,7 @@
 import React from 'react';
 import Toast from './Toast';
 
-const ToastContainer = ({ toasts, onRemoveToast }) => {
+const ToastContainer = ({ toasts, removeToast }) => {
   return (
     <div className="fixed top-4 right-4 z-50 space-y-2">
       {toasts.map((toast, index) => (
@@ -16,7 +16,7 @@ const ToastContainer = ({ toasts, onRemoveToast }) => {
             message={toast.message}
             type={toast.type}
             duration={toast.duration}
-            onClose={() => onRemoveToast(toast.id)}
+            onClose={() => removeToast(toast.id)}
           />
         </div>
       ))}

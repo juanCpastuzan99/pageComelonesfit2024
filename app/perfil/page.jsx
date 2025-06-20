@@ -2,6 +2,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { updateUserProfile, calculateIMC, fetchUserMetrics, addUserMetrics } from "../../store/slices/userMetricsSlice";
 import { paymentService } from "../services/paymentService";
 import { formatCurrency } from '../../utils/priceFormatter';
@@ -20,7 +21,7 @@ export default function PerfilPage() {
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [showAddMetricsModal, setShowAddMetricsModal] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
-  const [photoUrl, setPhotoUrl] = useState(user?.photoURL || '/default-avatar.png');
+  const [photoUrl, setPhotoUrl] = useState(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -44,11 +45,13 @@ export default function PerfilPage() {
         const userSnap = await getDoc(userRef);
         if (userSnap.exists() && userSnap.data().photoURL) {
           setPhotoUrl(userSnap.data().photoURL);
-        } else {
-          setPhotoUrl(user?.photoURL || '/default-avatar.png');
+        } else if (user?.photoURL) {
+          setPhotoUrl(user.photoURL);
         }
       } catch (err) {
-        setPhotoUrl(user?.photoURL || '/default-avatar.png');
+        if (user?.photoURL) {
+          setPhotoUrl(user.photoURL);
+        }
       }
     };
     fetchPhotoFromFirestore();
@@ -123,12 +126,17 @@ export default function PerfilPage() {
 
   return (
     <div className="container py-5">
+      <div className="mb-4">
+        <Link href="/" className="btn btn-outline-secondary">
+          &larr; Volver al Inicio
+        </Link>
+      </div>
       <div className="row">
         <div className="col-md-4">
           <div className="card mx-auto mb-4">
             <div className="card-body text-center">
               <img
-                src={photoUrl}
+                src={photoUrl || 'https://via.placeholder.com/100'}
                 alt={user?.displayName || user?.email}
                 className="rounded-circle mb-3"
                 style={{ width: 100, height: 100, objectFit: "cover" }}
@@ -147,12 +155,17 @@ export default function PerfilPage() {
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="card-title mb-0">Datos de Salud y Progreso</h4>
-                <button 
-                  className="btn btn-success btn-sm"
-                  onClick={() => setShowAddMetricsModal(true)}
-                >
-                  + Agregar Métricas
-                </button>
+                <div className="d-flex gap-2">
+                  <Link href="/mis-reportes" className="btn btn-info btn-sm">
+                    Ver Reporte
+                  </Link>
+                  <button
+                    className="btn btn-success btn-sm"
+                    onClick={() => setShowAddMetricsModal(true)}
+                  >
+                    + Agregar Métricas
+                  </button>
+                </div>
               </div>
               
               <div className="row">
@@ -400,12 +413,13 @@ export default function PerfilPage() {
         </div>
       </div>
 
-      {/* Modal para agregar métricas */}
-      <AddMetricsModal
-        isOpen={showAddMetricsModal}
-        onClose={() => setShowAddMetricsModal(false)}
-        onSuccess={handleMetricsSuccess}
-      />
+      {showAddMetricsModal && (
+        <AddMetricsModal
+          isOpen={showAddMetricsModal}
+          onClose={() => setShowAddMetricsModal(false)}
+          onSuccess={handleMetricsSuccess}
+        />
+      )}
 
       <ChangeProfilePhotoModal
         isOpen={showPhotoModal}

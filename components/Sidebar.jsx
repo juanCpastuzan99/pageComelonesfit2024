@@ -8,13 +8,24 @@ import { useSidebar } from '../app/context/SidebarContext';
 
 const Sidebar = () => {
   const { user } = useAuth();
-  const { isAdmin, canManageProducts } = usePermissions();
+  const { isAdmin, isOwner, userRole, loading: permissionsLoading } = usePermissions();
   
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const pathname = usePathname();
 
+  // DEBUG: Mostrar información de diagnóstico temporal
+  console.log('🔍 DEBUG Sidebar:', {
+    user: user?.email,
+    userRole,
+    isAdmin,
+    isOwner,
+    permissionsLoading,
+    hasUser: !!user
+  });
+
   // No mostrar sidebar si no hay usuario autenticado
   if (!user) {
+    console.log('❌ Sidebar: No hay usuario autenticado');
     return null;
   }
 
@@ -57,7 +68,7 @@ const Sidebar = () => {
         section: 'admin'
       },
       {
-        href: '/reportes',
+        href: '/admin/reportes',
         icon: FileBarChart2,
         label: 'Reportes',
         section: 'admin'
@@ -76,8 +87,24 @@ const Sidebar = () => {
         label: 'Configuración',
         section: 'user'
       }
-    ] : [])
+    ] : []),
+    ...(isAdmin ? [] : [
+      {
+        href: '/mis-reportes',
+        icon: BarChart2,
+        label: 'Mi Reporte',
+        section: 'user'
+      }
+    ])
   ];
+
+  // DEBUG: Mostrar información de los elementos del menú
+  console.log('🔍 DEBUG Menu Items:', {
+    totalItems: menuItems.length,
+    adminItems: menuItems.filter(item => item.section === 'admin').length,
+    isAdmin,
+    adminItemsList: menuItems.filter(item => item.section === 'admin').map(item => item.label)
+  });
 
   const MenuItem = ({ item, isActive }) => {
     const Icon = item.icon;

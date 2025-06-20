@@ -3,10 +3,9 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { appConfig, configUtils } from '../config/appConfig';
 
-export const permissionService = {
-  // Email del propietario principal
-  OWNER_EMAIL: appConfig.owner.email,
+const OWNER_EMAIL = appConfig.owner.email;
 
+export const permissionService = {
   // Verificar si un usuario es propietario
   isOwner(user) {
     if (!user || !user.email) return false;
@@ -15,25 +14,21 @@ export const permissionService = {
 
   // Verificar si un usuario es administrador (incluye propietario)
   async isAdmin(user) {
-    if (!user || !user.email) return false;
-    
-    // El propietario siempre es admin
-    if (this.isOwner(user)) return true;
-    
+    if (!user) return false;
+    if (user.email === OWNER_EMAIL) {
+      return true;
+    }
     try {
-      // Verificar en la colección de configuración de admin emails
-      const adminConfigRef = doc(db, appConfig.firebase.config.adminEmails, 'adminEmails');
-      const adminConfigDoc = await getDoc(adminConfigRef);
-      
-      if (adminConfigDoc.exists()) {
-        const adminEmails = adminConfigDoc.data().emails || [];
-        return adminEmails.includes(user.email.toLowerCase());
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const isAdminResult = userData.role === 'admin' || userData.role === 'owner';
+        return isAdminResult;
       }
-      
-      // Si no existe la configuración, crear con el propietario
       return false;
     } catch (error) {
-      console.error('Error al verificar permisos de admin:', error);
+      console.error("Error checking admin status:", error);
       return false;
     }
   },
@@ -65,24 +60,24 @@ export const permissionService = {
 
   // Obtener el rol del usuario desde Firestore
   async getUserRole(user) {
-    if (!user) return 'guest';
-    
+    if (!user) return 'visitor';
+    if (user.email === OWNER_EMAIL) {
+      return 'owner';
+    }
     try {
-      const userRef = doc(db, appConfig.firebase.collections.users, user.uid);
-      const userDoc = await getDoc(userRef);
-      
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
       if (userDoc.exists()) {
-        return userDoc.data().role || 'visitor';
+        const userRole = userDoc.data().role || 'visitor';
+        if (userRole === 'owner' && user.email !== OWNER_EMAIL) {
+          return 'visitor';
+        }
+        const finalRole = userRole;
+        return finalRole;
       }
-      
-      // Si no existe en Firestore, verificar si es admin
-      if (await this.isAdmin(user)) {
-        return 'admin';
-      }
-      
       return 'visitor';
     } catch (error) {
-      console.error('Error al obtener rol del usuario:', error);
+      console.error("Error getting user role:", error);
       return 'visitor';
     }
   },
@@ -90,36 +85,33 @@ export const permissionService = {
   // Obtener permisos específicos del usuario
   async getUserPermissions(user) {
     if (!user) {
-      return {
-        canManageProducts: false,
-        canAccessAdminDashboard: false,
-        canCreateProducts: false,
-        canEditProducts: false,
-        canDeleteProducts: false,
-        canViewProducts: true, // Todos pueden ver productos
-        canAddToCart: true,    // Todos pueden agregar al carrito
-        role: 'guest'
-      };
+      return { canManageProducts: false, canViewDashboard: false };
     }
-    
-    const isAdmin = await this.isAdmin(user);
-    const role = await this.getUserRole(user);
-    
-    return {
-      canManageProducts: isAdmin,
-      canAccessAdminDashboard: isAdmin,
-      canCreateProducts: isAdmin,
-      canEditProducts: isAdmin,
-      canDeleteProducts: isAdmin,
-      canViewProducts: true, // Todos pueden ver productos
-      canAddToCart: true,    // Todos pueden agregar al carrito
-      role: role
-    };
+    try {
+      const userRole = await this.getUserRole(user);
+
+      const permissions = {
+        isAdmin: userRole === 'admin' || userRole === 'owner',
+        isOwner: userRole === 'owner',
+        userEmail: user.email,
+        role: userRole,
+        canAccessAdminDashboard: ['admin', 'owner'].includes(userRole),
+        canCreateProducts: ['admin', 'owner'].includes(userRole),
+        canEditProducts: ['admin', 'owner'].includes(userRole),
+        canDeleteProducts: ['admin', 'owner'].includes(userRole),
+        canManageUsers: ['owner'].includes(userRole),
+        canManageSettings: ['owner'].includes(userRole),
+        canViewOrders: ['admin', 'owner'].includes(userRole),
+      };
+      return permissions;
+    } catch (error) {
+      console.error("Error getting user permissions:", error);
+      return { canManageProducts: false, canViewDashboard: false };
+    }
   },
 
-  // Verificar permisos de forma síncrona (para casos donde no se puede usar async)
+  // Verificar permisos de forma síncrona (solo para el propietario)
   isAdminSync(user) {
-    if (!user || !user.email) return false;
     return this.isOwner(user);
   },
 

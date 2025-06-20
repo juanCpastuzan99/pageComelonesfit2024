@@ -1,10 +1,9 @@
 // Configuración centralizada de la aplicación
 export const appConfig = {
-  // Configuración del propietario
+  // Información del propietario de la aplicación
   owner: {
-    email: 'pastuzanjuancarlos@gmail.com',
-    name: 'Juan Carlos Pastuzón',
-    role: 'owner'
+    name: 'Juan Carlos Pastuzan',
+    email: 'pastuzanjuancarlos@gmail.com', // Correo del propietario con acceso total
   },
 
   // Configuración de roles

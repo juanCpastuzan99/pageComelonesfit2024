@@ -1,140 +1,22 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+"use client";
+import React, { createContext, useContext, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useAuth } from './AuthContext';
-import { cartService } from '../services/cartService';
+import {
+  loadCart,
+  addItemToCart,
+  removeItemFromCart,
+  updateItemQuantity,
+  clearCart,
+  loadGuestCart,
+  addItemToGuestCart,
+  removeItemFromGuestCart,
+  updateGuestCartQuantity,
+  clearGuestCart,
+} from '../../store/slices/cartSlice';
 
-// Estado inicial del carrito
-const initialState = {
-  items: [],
-  total: 0,
-  itemCount: 0,
-  loading: false,
-  error: null
-};
-
-// Tipos de acciones
-const CART_ACTIONS = {
-  ADD_ITEM: 'ADD_ITEM',
-  REMOVE_ITEM: 'REMOVE_ITEM',
-  UPDATE_QUANTITY: 'UPDATE_QUANTITY',
-  CLEAR_CART: 'CLEAR_CART',
-  LOAD_CART: 'LOAD_CART',
-  SET_LOADING: 'SET_LOADING',
-  SET_ERROR: 'SET_ERROR',
-  SYNC_CART: 'SYNC_CART'
-};
-
-// Reducer del carrito
-const cartReducer = (state, action) => {
-  switch (action.type) {
-    case CART_ACTIONS.SET_LOADING:
-      return {
-        ...state,
-        loading: action.payload
-      };
-
-    case CART_ACTIONS.SET_ERROR:
-      return {
-        ...state,
-        error: action.payload,
-        loading: false
-      };
-
-    case CART_ACTIONS.LOAD_CART:
-      return {
-        ...state,
-        ...action.payload,
-        loading: false,
-        error: null
-      };
-
-    case CART_ACTIONS.ADD_ITEM: {
-      const existingItem = state.items.find(item => item.id === action.payload.id);
-      
-      if (existingItem) {
-        // Si el item ya existe, aumentar la cantidad
-        const updatedItems = state.items.map(item =>
-          item.id === action.payload.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-        
-        return {
-          ...state,
-          items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + ((item.price ?? item.precio ?? 0) * item.quantity), 0),
-          itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
-          error: null
-        };
-      } else {
-        // Si es un item nuevo, agregarlo
-        const newItem = { ...action.payload, quantity: 1 };
-        const updatedItems = [...state.items, newItem];
-        
-        return {
-          ...state,
-          items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + ((item.price ?? item.precio ?? 0) * item.quantity), 0),
-          itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
-          error: null
-        };
-      }
-    }
-    
-    case CART_ACTIONS.REMOVE_ITEM: {
-      const updatedItems = state.items.filter(item => item.id !== action.payload);
-      
-      return {
-        ...state,
-        items: updatedItems,
-        total: updatedItems.reduce((sum, item) => sum + ((item.price ?? item.precio ?? 0) * item.quantity), 0),
-        itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
-        error: null
-      };
-    }
-    
-    case CART_ACTIONS.UPDATE_QUANTITY: {
-      const { id, quantity } = action.payload;
-      
-      if (quantity <= 0) {
-        // Si la cantidad es 0 o menor, remover el item
-        return cartReducer(state, { type: CART_ACTIONS.REMOVE_ITEM, payload: id });
-      }
-      
-      const updatedItems = state.items.map(item =>
-        item.id === id ? { ...item, quantity } : item
-      );
-      
-      return {
-        ...state,
-        items: updatedItems,
-        total: updatedItems.reduce((sum, item) => sum + ((item.price ?? item.precio ?? 0) * item.quantity), 0),
-        itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
-        error: null
-      };
-    }
-    
-    case CART_ACTIONS.CLEAR_CART:
-      return {
-        ...initialState,
-        loading: false
-      };
-      
-    case CART_ACTIONS.SYNC_CART:
-      return {
-        ...state,
-        ...action.payload,
-        error: null
-      };
-      
-    default:
-      return state;
-  }
-};
-
-// Crear el contexto
 const CartContext = createContext();
 
-// Hook personalizado para usar el contexto
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
@@ -143,159 +25,68 @@ export const useCart = () => {
   return context;
 };
 
-// Provider del carrito
 export const CartProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(cartReducer, initialState);
+  const dispatch = useDispatch();
   const { user } = useAuth();
+  const cartState = useSelector((state) => state.cart) || {};
 
-  // Cargar carrito desde localStorage al inicializar (para usuarios no autenticados)
+  useEffect(() => {
+    if (user) {
+      dispatch(loadCart(user.uid));
+    } else {
+      const savedCart = localStorage.getItem('guestCart');
+      if (savedCart) {
+        dispatch(loadGuestCart(JSON.parse(savedCart)));
+      }
+    }
+  }, [user, dispatch]);
+
   useEffect(() => {
     if (!user) {
-      const savedCart = localStorage.getItem('cart');
-      if (savedCart) {
-        try {
-          const parsedCart = JSON.parse(savedCart);
-          dispatch({ type: CART_ACTIONS.LOAD_CART, payload: parsedCart });
-        } catch (error) {
-          console.error('Error al cargar el carrito local:', error);
-        }
-      }
+      const { items, itemCount, total } = cartState;
+      localStorage.setItem('guestCart', JSON.stringify({ items, itemCount, total }));
     }
-  }, [user]);
+  }, [cartState, user]);
 
-  // Cargar carrito desde la base de datos cuando el usuario se autentica
-  useEffect(() => {
+  const handleAddToCart = (product) => {
     if (user) {
-      loadCartFromDatabase();
-    }
-  }, [user]);
-
-  // Guardar carrito en localStorage cuando cambie (solo para usuarios no autenticados)
-  useEffect(() => {
-    if (!user && !state.loading) {
-      localStorage.setItem('cart', JSON.stringify({
-        items: state.items,
-        total: state.total,
-        itemCount: state.itemCount
-      }));
-    }
-  }, [state.items, state.total, state.itemCount, user, state.loading]);
-
-  // Función para cargar carrito desde la base de datos
-  const loadCartFromDatabase = async () => {
-    if (!user) return;
-
-    dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
-    try {
-      const cartData = await cartService.getCart(user.uid);
-      dispatch({ type: CART_ACTIONS.LOAD_CART, payload: cartData });
-    } catch (error) {
-      console.error('Error loading cart from database:', error);
-      dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Error al cargar el carrito' });
+      dispatch(addItemToCart({ userId: user.uid, product }));
+    } else {
+      dispatch(addItemToGuestCart(product));
     }
   };
 
-  // Función para sincronizar carrito con la base de datos
-  const syncCartWithDatabase = async () => {
-    if (!user) return;
-
-    try {
-      const currentCart = {
-        items: state.items,
-        total: state.total,
-        itemCount: state.itemCount,
-        updatedAt: new Date()
-      };
-      
-      const syncedCart = await cartService.syncCartWithDatabase(user.uid, currentCart);
-      dispatch({ type: CART_ACTIONS.SYNC_CART, payload: syncedCart });
-    } catch (error) {
-      console.error('Error syncing cart with database:', error);
-      dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Error al sincronizar el carrito' });
-    }
-  };
-
-  // Funciones del carrito
-  const addToCart = async (product) => {
-    dispatch({ type: CART_ACTIONS.ADD_ITEM, payload: product });
-    
-    // Si el usuario está autenticado, guardar en la base de datos
+  const handleRemoveFromCart = (productId) => {
     if (user) {
-      try {
-        await cartService.addItemToCart(user.uid, product);
-      } catch (error) {
-        console.error('Error saving to database:', error);
-        dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Error al guardar en la base de datos' });
-      }
+      dispatch(removeItemFromCart({ userId: user.uid, productId }));
+    } else {
+      dispatch(removeItemFromGuestCart(productId));
     }
   };
 
-  const removeFromCart = async (productId) => {
-    dispatch({ type: CART_ACTIONS.REMOVE_ITEM, payload: productId });
-    
-    // Si el usuario está autenticado, actualizar en la base de datos
+  const handleUpdateQuantity = (productId, quantity) => {
     if (user) {
-      try {
-        await cartService.removeItemFromCart(user.uid, productId);
-      } catch (error) {
-        console.error('Error removing from database:', error);
-        dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Error al eliminar de la base de datos' });
-      }
+      dispatch(updateItemQuantity({ userId: user.uid, productId, quantity }));
+    } else {
+      dispatch(updateGuestCartQuantity({ id: productId, quantity }));
     }
   };
 
-  const updateQuantity = async (productId, quantity) => {
-    dispatch({ type: CART_ACTIONS.UPDATE_QUANTITY, payload: { id: productId, quantity } });
-    
-    // Si el usuario está autenticado, actualizar en la base de datos
+  const handleClearCart = () => {
     if (user) {
-      try {
-        await cartService.updateItemQuantity(user.uid, productId, quantity);
-      } catch (error) {
-        console.error('Error updating quantity in database:', error);
-        dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Error al actualizar cantidad en la base de datos' });
-      }
+      dispatch(clearCart(user.uid));
+    } else {
+      dispatch(clearGuestCart());
     }
-  };
-
-  const clearCart = async () => {
-    dispatch({ type: CART_ACTIONS.CLEAR_CART });
-    
-    // Si el usuario está autenticado, limpiar en la base de datos
-    if (user) {
-      try {
-        await cartService.clearCart(user.uid);
-      } catch (error) {
-        console.error('Error clearing cart in database:', error);
-        dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Error al limpiar el carrito en la base de datos' });
-      }
-    }
-  };
-
-  const isInCart = (productId) => {
-    return state.items.some(item => item.id === productId);
-  };
-
-  const getItemQuantity = (productId) => {
-    const item = state.items.find(item => item.id === productId);
-    return item ? item.quantity : 0;
   };
 
   const value = {
-    ...state,
-    addToCart,
-    removeFromCart,
-    updateQuantity,
-    clearCart,
-    isInCart,
-    getItemQuantity,
-    syncCartWithDatabase,
-    loadCartFromDatabase
+    ...cartState,
+    addToCart: handleAddToCart,
+    removeFromCart: handleRemoveFromCart,
+    updateQuantity: handleUpdateQuantity,
+    clearCart: handleClearCart,
   };
 
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-    </CartContext.Provider>
-  );
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }; 

@@ -335,6 +335,23 @@ export default function LoginForm({ initialMode = 'login' }) {
           )}
         </>
       )}
+      {showReset ? (
+        <form onSubmit={handleReset} className="mb-4">
+          <button type="submit" className="btn btn-primary w-100 mb-2" disabled={loading}>
+            Recuperar cuenta
+          </button>
+          <button type="button" className="btn btn-link w-100" onClick={() => setShowReset(false)}>
+            Volver al login
+          </button>
+          {resetMsg && <div className="alert alert-info mt-2">{resetMsg}</div>}
+        </form>
+      ) : (
+        <>
+          <div className="text-center mt-3">
+            <a href="/" className="btn btn-outline-secondary w-100">Volver al inicio</a>
+          </div>
+        </>
+      )}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-green-500 text-white rounded-xl shadow-lg p-8 max-w-sm w-full flex flex-col items-center animate-fade-in">

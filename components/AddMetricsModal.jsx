@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaSave, FaWeight, FaRuler, FaFire, FaImage, FaLink, FaUpload } from 'react-icons/fa';
 import { useUserMetrics } from '../app/hooks/useUserMetrics';
+import { useToast } from '../app/hooks/useToast';
 import { storage, db } from '../app/firebase/firebaseConfig';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { useAuth } from '../app/context/AuthContext';
@@ -12,6 +13,7 @@ import Image from 'next/image';
 
 export default function AddMetricsModal({ isOpen, onClose, onSuccess }) {
   const { addMetrics } = useUserMetrics();
+  const { addToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
@@ -33,14 +35,13 @@ export default function AddMetricsModal({ isOpen, onClose, onSuccess }) {
     }));
   };
 
+  const hasData = Object.entries(formData).some(([key, value]) =>
+    key !== 'date' && value && value.toString().trim() !== ''
+  );
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate at least one field is filled
-    const hasData = Object.entries(formData).some(([key, value]) => 
-      key !== 'date' && value && value.toString().trim() !== ''
-    );
-
     if (!hasData) {
       setError('Por favor, ingresa al menos una métrica');
       return;
@@ -72,6 +73,8 @@ export default function AddMetricsModal({ isOpen, onClose, onSuccess }) {
         date: new Date().toISOString().split('T')[0]
       });
 
+      addToast('Métricas guardadas con éxito', 'success');
+      onClose();
       onSuccess?.();
     } catch (err) {
       setError(err.message || 'Error al guardar las métricas');
@@ -247,8 +250,8 @@ export default function AddMetricsModal({ isOpen, onClose, onSuccess }) {
               </button>
               <button
                 type="submit"
-                disabled={loading}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                disabled={loading || !hasData}
+                className="flex-1 px-4 py-3 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

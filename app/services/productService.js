@@ -1,113 +1,115 @@
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  where,
+  orderBy,
+  limit,
+  Timestamp,
+} from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
-import { Product } from '../models/Product';
+import { sampleProducts } from '../models/Product';
+
+const productsCollection = collection(db, 'productos');
 
 export const productService = {
-  // Agregar un nuevo producto
-  async addProduct(productData) {
+  getProducts: async ({ destacados = null, ordenarPor = 'createdAt', direccion = 'desc', limite = 20 } = {}) => {
     try {
-      const product = new Product(productData);
-      const docRef = await addDoc(collection(db, 'products'), product.toFirestore());
-      return { id: docRef.id, ...productData };
-    } catch (error) {
-      console.error('Error adding product:', error);
-      throw error;
-    }
-  },
-
-  // Obtener todos los productos
-  async getAllProducts() {
-    try {
-      const querySnapshot = await getDocs(collection(db, 'products'));
-      return querySnapshot.docs.map(doc => Product.fromFirestore(doc));
-    } catch (error) {
-      console.error('Error getting products:', error);
-      throw error;
-    }
-  },
-
-  // Actualizar un producto
-  async updateProduct(id, productData) {
-    try {
-      const productRef = doc(db, 'products', id);
-      const product = new Product({ ...productData, id });
-      await updateDoc(productRef, product.toFirestore());
-      return { id, ...productData };
-    } catch (error) {
-      console.error('Error updating product:', error);
-      throw error;
-    }
-  },
-
-  // Eliminar un producto
-  async deleteProduct(id) {
-    try {
-      await deleteDoc(doc(db, 'products', id));
-      return id;
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      throw error;
-    }
-  },
-
-  // Agregar productos de prueba
-  async addSampleProducts() {
-    const sampleProducts = [
-      {
-        nombre: 'Proteína Whey Gold Standard',
-        descripcion: 'Proteína de suero de leche de alta calidad, 24g de proteína por porción',
-        precio: 49.99,
-        imagen: 'https://example.com/whey.jpg',
-        destacado: true,
-        categoria: 'Suplementos',
-        stock: 50,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        nombre: 'BCAA 2:1:1',
-        descripcion: 'Aminoácidos ramificados para recuperación muscular',
-        precio: 29.99,
-        imagen: 'https://example.com/bcaa.jpg',
-        destacado: true,
-        categoria: 'Suplementos',
-        stock: 30,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        nombre: 'Creatina Monohidratada',
-        descripcion: 'Creatina pura para aumentar la fuerza y masa muscular',
-        precio: 19.99,
-        imagen: 'https://example.com/creatine.jpg',
-        destacado: false,
-        categoria: 'Suplementos',
-        stock: 40,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        nombre: 'Barra de Proteína',
-        descripcion: 'Snack rico en proteínas, 20g de proteína por barra',
-        precio: 2.99,
-        imagen: 'https://example.com/protein-bar.jpg',
-        destacado: true,
-        categoria: 'Snacks',
-        stock: 100,
-        createdAt: new Date(),
-        updatedAt: new Date()
+      let q = query(productsCollection, orderBy(ordenarPor, direccion), limit(limite));
+      if (destacados !== null) {
+        q = query(q, where('destacado', '==', destacados));
       }
-    ];
 
+      const querySnapshot = await getDocs(q);
+      const newProducts = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(data.createdAt),
+          updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : new Date(data.updatedAt),
+        };
+      });
+
+      const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+      return { newProducts, lastVisible };
+    } catch (error) {
+      console.error('[productService] Error al obtener productos:', error);
+      throw error;
+    }
+  },
+
+  addProduct: async (productData) => {
     try {
-      const results = await Promise.all(
-        sampleProducts.map(product => this.addProduct(product))
-      );
-      console.log('Productos de prueba agregados:', results);
+      const newProduct = {
+        ...productData,
+        precio: parseFloat(productData.precio) || 0,
+        stock: parseInt(productData.stock, 10) || 0,
+        destacado: !!productData.destacado,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const docRef = await addDoc(productsCollection, newProduct);
+      return { id: docRef.id, ...newProduct };
+    } catch (error) {
+      console.error('[productService] Error al agregar producto:', error);
+      throw error;
+    }
+  },
+
+  updateProduct: async (productId, productData) => {
+    try {
+      const productRef = doc(db, 'productos', productId);
+      const updatedData = {
+        ...productData,
+        updatedAt: new Date(),
+      };
+      if (productData.precio) {
+        updatedData.precio = parseFloat(productData.precio) || 0;
+      }
+      if (productData.stock) {
+        updatedData.stock = parseInt(productData.stock, 10) || 0;
+      }
+      if (productData.destacado !== undefined) {
+        updatedData.destacado = !!productData.destacado;
+      }
+      await updateDoc(productRef, updatedData);
+      return { id: productId, ...updatedData };
+    } catch (error) {
+      console.error(`[productService] Error al actualizar producto ${productId}:`, error);
+      throw error;
+    }
+  },
+
+  deleteProduct: async (productId) => {
+    try {
+      const productRef = doc(db, 'productos', productId);
+      await deleteDoc(productRef);
+    } catch (error) {
+      console.error(`[productService] Error al eliminar producto ${productId}:`, error);
+      throw error;
+    }
+  },
+
+  addSampleProducts: async () => {
+    try {
+      const results = [];
+      for (const product of sampleProducts) {
+        const docRef = await addDoc(productsCollection, {
+          ...product,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        results.push(docRef.id);
+      }
       return results;
     } catch (error) {
-      console.error('Error adding sample products:', error);
+      console.error('Error agregando productos de prueba:', error);
       throw error;
     }
-  }
+  },
 }; 

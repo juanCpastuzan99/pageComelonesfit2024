@@ -14,8 +14,10 @@ import {
     updateProfile,
     sendPasswordResetEmail
 } from 'firebase/auth'
-import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase/firebaseConfig'
+import { appConfig } from '../config/appConfig'
+import { userService } from '../services/userService'
 
 const AuthContext = createContext()
 
@@ -81,6 +83,18 @@ export function AuthProvider({ children }) {
             setLoading(true)
             const result = await createUserWithEmailAndPassword(auth, email, password)
             
+            // Determinar el rol inicial del usuario
+            let initialRole = 'visitor';
+            
+            // Verificar si es el propietario
+            if (email === appConfig.owner.email) {
+                initialRole = 'owner';
+            }
+            // Verificar si está en la lista de emails admin
+            else if (await userService.isEmailAdmin(email)) {
+                initialRole = 'admin';
+            }
+            
             // Actualizar el perfil del usuario con los datos adicionales
             if (Object.keys(userData).length > 0) {
                 await updateProfile(result.user, {
@@ -88,7 +102,7 @@ export function AuthProvider({ children }) {
                     // Otros campos se pueden guardar en Firestore
                 })
                 
-                // Guardar datos adicionales en Firestore
+                // Guardar datos adicionales en Firestore con el rol correcto
                 const userRef = doc(db, 'users', result.user.uid)
                 await setDoc(userRef, {
                     email: email,
@@ -96,11 +110,13 @@ export function AuthProvider({ children }) {
                     apellido: userData.apellido,
                     telefono: userData.telefono,
                     direccion: userData.direccion,
-                    createdAt: new Date().toISOString()
+                    role: initialRole,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
                 })
             }
             
-            console.log('Usuario registrado:', result.user.email)
+            console.log(`Usuario registrado: ${result.user.email} con rol: ${initialRole}`)
             return result.user
         } catch (error) {
             let errorMessage = 'Error al registrar usuario'
@@ -260,12 +276,59 @@ export function AuthProvider({ children }) {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Buscar foto en Firestore
+                const userRef = doc(db, 'users', user.uid);
+                
+                // Sincronizar rol de propietario si el email coincide con la configuración
+                if (user.email === appConfig.owner.email) {
+                    try {
+                        const userSnap = await getDoc(userRef);
+                        if (!userSnap.exists() || userSnap.data().role !== 'owner') {
+                            await setDoc(userRef, { 
+                                role: 'owner', 
+                                email: user.email,
+                                updatedAt: serverTimestamp()
+                            }, { merge: true });
+                            console.log(`Rol de 'propietario' asegurado para ${user.email}`);
+                        }
+                    } catch (syncError) {
+                        console.error("Error sincronizando el rol de propietario:", syncError);
+                    }
+                }
+                // Verificar si el usuario debe tener rol de admin (pero no es propietario)
+                else if (user.email !== appConfig.owner.email) {
+                    try {
+                        const userSnap = await getDoc(userRef);
+                        if (userSnap.exists()) {
+                            const userData = userSnap.data();
+                            const isAdminEmail = await userService.isEmailAdmin(user.email);
+                            
+                            // Si está en la lista de admin pero no tiene rol admin, actualizar
+                            if (isAdminEmail && userData.role !== 'admin') {
+                                await updateDoc(userRef, {
+                                    role: 'admin',
+                                    updatedAt: serverTimestamp()
+                                });
+                                console.log(`Usuario ${user.email} promovido a admin`);
+                            }
+                            // Si no está en la lista de admin pero tiene rol admin, degradar
+                            else if (!isAdminEmail && userData.role === 'admin') {
+                                await updateDoc(userRef, {
+                                    role: 'visitor',
+                                    updatedAt: serverTimestamp()
+                                });
+                                console.log(`Usuario ${user.email} degradado a visitor`);
+                            }
+                        }
+                    } catch (syncError) {
+                        console.error("Error sincronizando roles de admin:", syncError);
+                    }
+                }
+
+                // Cargar datos adicionales del usuario
                 try {
-                    const userRef = doc(db, 'users', user.uid);
                     const userSnap = await getDoc(userRef);
                     if (userSnap.exists() && userSnap.data().photoURL) {
-                        setUser({ ...user, photoURL: userSnap.data().photoURL });
+                        setUser({ ...user, ...userSnap.data() }); // Combinar auth user con datos de firestore
                     } else {
                         setUser(user);
                     }

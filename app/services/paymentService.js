@@ -186,6 +186,7 @@ export const paymentService = {
 
       const ordersRef = collection(db, 'orders');
       const q = query(ordersRef, where('userId', '==', userId), orderBy('createdAt', 'desc'));
+      // const q = query(ordersRef, where('userId', '==', userId)); // <-- Prueba sin ordenar
       const querySnapshot = await getDocs(q);
       
       const orders = [];
@@ -207,6 +208,25 @@ export const paymentService = {
       } else {
         throw new Error(`Error al obtener las órdenes del usuario: ${error.message}`);
       }
+    }
+  },
+
+  // Obtener todas las órdenes (para el admin)
+  async getAllOrders() {
+    try {
+      const ordersRef = collection(db, 'orders');
+      const q = query(ordersRef, orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+
+      const orders = [];
+      querySnapshot.forEach((doc) => {
+        orders.push({ id: doc.id, ...doc.data() });
+      });
+
+      return orders;
+    } catch (error) {
+      console.error('Error getting all orders:', error);
+      throw new Error('Error al obtener todas las órdenes');
     }
   },
 

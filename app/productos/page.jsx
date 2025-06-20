@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import ProtectedRoute from '../../components/ProtectedRoute';
-import { useProducts } from '../../hooks/useProducts';
+import { useProducts } from '../hooks/useProducts';
 import { usePermissions } from '../hooks/usePermissions';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../../components/ProductCard';
@@ -9,119 +9,79 @@ import { useToast } from '../hooks/useToast';
 import ToastContainer from '../../components/ToastContainer';
 import AddProductModal from '../../components/AddProductModal';
 import { formatCurrency } from '../../utils/priceFormatter';
+import ProductDetailModal from '../../components/ProductDetailModal';
 
 const ProductosPage = () => {
-  const { products, loading: loadingProducts, error: productsError, refetch } = useProducts({
-    destacados: false,
+  const { products, loading: loadingProducts, error: productsError, refetch, deleteProduct } = useProducts({
+    destacados: null,
     ordenarPor: 'createdAt',
-    direccion: 'desc'
+    direccion: 'desc',
+    limite: 100
   });
-  const { toasts, showSuccess, removeToast } = useToast();
-  const { isAdmin, canDeleteProducts, user } = usePermissions();
-  const { removeDeletedProducts } = useCart();
+  const { toasts, showSuccess, showError, removeToast } = useToast();
+  const { isAdmin } = usePermissions();
+  const { removeFromCart } = useCart();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [localProducts, setLocalProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-  // Sincronizar productos locales con los del hook
   useEffect(() => {
-    setLocalProducts(products);
+    if (products) {
+      setLocalProducts(products);
+    }
   }, [products]);
-
-  const handleAddToCartSuccess = (message) => {
-    showSuccess(message);
-  };
 
   const handleProductAdded = (message) => {
     showSuccess(message);
-    // Refetch products to show the new one
-    if (refetch) {
-      refetch();
-    }
+    refetch(); // Recargar la lista de productos
   };
 
-  const handleProductDeleted = (productId, message) => {
-    // Remover el producto de la lista local
-    setLocalProducts(prevProducts => {
-      const newProducts = prevProducts.filter(p => p.id !== productId);
-      return newProducts;
-    });
-    
-    // Limpiar el producto eliminado del carrito
-    removeDeletedProducts([productId]);
-    
-    showSuccess(message);
+  const handleProductDeleted = async (productId) => {
+    try {
+      await deleteProduct(productId);
+      setLocalProducts(prev => prev.filter(p => p.id !== productId));
+      removeFromCart(productId);
+      showSuccess('Producto eliminado con éxito.');
+    } catch (error) {
+      console.error("Error al eliminar el producto:", error);
+      showError('Error al eliminar el producto.');
+    }
   };
 
   const handleProductUpdated = (message) => {
     showSuccess(message);
-    // Refetch products to show the updated one
-    if (refetch) {
-      refetch();
-    }
+    refetch(); // Recargar para mostrar los cambios
   };
 
-  const handleOpenAddModal = () => {
-    setIsAddModalOpen(true);
-  };
+  const handleOpenAddModal = () => setIsAddModalOpen(true);
+  const handleCloseAddModal = () => setIsAddModalOpen(false);
 
-  const handleCloseAddModal = () => {
-    setIsAddModalOpen(false);
+  const handleViewDetails = (product) => {
+    setSelectedProduct(product);
+    setIsDetailModalOpen(true);
   };
 
   return (
     <ProtectedRoute requiredPermission="manage_products">
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pt-[4.5rem] pb-6">
+        <div className="w-full max-w-7xl mx-auto px-3">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500 dark:from-green-400 dark:to-emerald-300 mb-4">
+          <div className="mb-4">
+            <h1 className="text-2xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500 dark:from-green-400 dark:to-emerald-300 mb-2">
               Gestión de Productos
             </h1>
-            <p className="text-xl text-green-700 dark:text-green-300">
-              Administra tu catálogo de productos fitness
+            <p className="text-base sm:text-xl text-green-700 dark:text-green-300">
+              Administra tu catálogo completo de productos
             </p>
           </div>
 
           {/* Controles de Administración */}
-          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-6 mb-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button 
-                  onClick={handleOpenAddModal}
-                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl transition-all duration-300 flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  Nuevo Producto
-                </button>
-                <button className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-all duration-300 flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                  </svg>
-                  Importar Productos
-                </button>
-              </div>
-              
-              <div className="flex gap-4">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Buscar productos..."
-                    className="pl-10 pr-4 py-3 rounded-xl border border-green-200 dark:border-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
-                  />
-                  <svg className="w-5 h-5 text-green-500 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                <select className="px-4 py-3 rounded-xl border border-green-200 dark:border-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white">
-                  <option value="">Todas las categorías</option>
-                  <option value="suplementos">Suplementos</option>
-                  <option value="equipamiento">Equipamiento</option>
-                  <option value="ropa">Ropa</option>
-                </select>
-              </div>
-            </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-3 mb-4">
+            <button onClick={handleOpenAddModal} className="w-full h-10 sm:h-12 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-sm hover:shadow-md text-sm sm:text-base font-medium">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+              Nuevo Producto
+            </button>
           </div>
 
           {/* Estadísticas */}
@@ -214,29 +174,14 @@ const ProductosPage = () => {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
               </div>
             ) : productsError ? (
-              <div className="text-center py-12">
-                <p className="text-red-600 dark:text-red-400">{productsError}</p>
+              <div className="text-center py-12 text-red-500">
+                <p>{productsError}</p>
               </div>
             ) : localProducts.length === 0 ? (
               <div className="text-center py-12">
-                <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  No hay productos disponibles
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Comienza creando tu primer producto para tu catálogo
-                </p>
-                <button 
-                  onClick={handleOpenAddModal}
-                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl transition-all duration-300 flex items-center gap-2 mx-auto"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Tu catálogo está vacío</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">Crea tu primer producto para empezar a vender.</p>
+                <button onClick={handleOpenAddModal} className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl">
                   Crear Primer Producto
                 </button>
               </div>
@@ -246,35 +191,30 @@ const ProductosPage = () => {
                   <ProductCard
                     key={product.id}
                     product={product}
-                    showDetails={true}
-                    showAdminOptions={true}
-                    onViewDetails={(product) => {
-                      console.log('Ver detalles:', product);
-                    }}
-                    onAddToCartSuccess={handleAddToCartSuccess}
                     onProductDeleted={handleProductDeleted}
                     onProductUpdated={handleProductUpdated}
-                  >
-                    <span className="text-xl font-bold text-green-600 dark:text-green-400">
-                      {formatCurrency(product.precio)}
-                    </span>
-                  </ProductCard>
+                    onAddToCartSuccess={showSuccess}
+                    showDetails={true}
+                    onViewDetails={handleViewDetails}
+                    showAdminOptions={isAdmin}
+                  />
                 ))}
               </div>
             )}
           </div>
         </div>
-
-        {/* Toast Container */}
-        <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-
-        {/* Modal para agregar producto */}
-        <AddProductModal
-          isOpen={isAddModalOpen}
-          onClose={handleCloseAddModal}
-          onProductAdded={handleProductAdded}
-        />
       </div>
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      <AddProductModal
+        isOpen={isAddModalOpen}
+        onClose={handleCloseAddModal}
+        onProductAdded={handleProductAdded}
+      />
+      <ProductDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        product={selectedProduct}
+      />
     </ProtectedRoute>
   );
 };

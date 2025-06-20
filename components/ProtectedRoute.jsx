@@ -7,7 +7,17 @@ const ProtectedRoute = ({
   fallback = null,
   showMessage = true 
 }) => {
-  const { can, userRole, isAdmin } = usePermissions();
+  const { can, userRole, isAdmin, initializing } = usePermissions();
+
+  // Muestra un loader mientras se inicializan los permisos
+  if (initializing) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+        <p className="ml-4 text-lg">Verificando acceso...</p>
+      </div>
+    );
+  }
 
   // Si no se especifica permiso requerido, mostrar el contenido
   if (!requiredPermission) {
